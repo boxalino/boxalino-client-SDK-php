@@ -238,7 +238,19 @@ class BxData
 	public function setFieldIsMultiValued($sourceKey, $fieldName, $multiValued = true) {
 		$this->addFieldParameter($sourceKey, $fieldName, 'multiValued', $multiValued ? 'true' : 'false');
 	}
-	
+
+	public function addSourceCustomerGuestProperty($sourceKey, $parameterValue) {
+		$this->addSourceParameter($sourceKey, "guest_property_id", $parameterValue);
+	}
+
+	public function addSourceParameter($sourceKey, $parameterName, $parameterValue) {
+		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+		if(!isset($this->sources[$container][$sourceId])) {
+			throw new \Exception("trying to add a source parameter on sourceId '$sourceId', container '$container' while this source doesn't exist");
+		}
+		$this->sources[$container][$sourceId][$parameterName] = $parameterValue;
+	}
+
 	public function addFieldParameter($sourceKey, $fieldName, $parameterName, $parameterValue) {
 		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
 		if(!isset($this->sources[$container][$sourceId]['fields'][$fieldName])) {
