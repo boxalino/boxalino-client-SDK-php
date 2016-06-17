@@ -24,6 +24,9 @@ class BxClient
 	const VISITOR_COOKIE_TIME = 31536000;
 	
 	private $requestContextParameters = array();
+	
+	private $sessionId = null;
+	private $profileId = null;
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
 		if (isset($_REQUEST['_d_bx_account']) && isset($_REQUEST['_d_bx_password'])) {
@@ -98,38 +101,44 @@ class BxClient
 	}
 	
 	private function getSessionAndProfile() {
+		
+		if($this->sessionId != null && $this->profileId != null) {
+			return array($this->sessionId, $this->profileId);
+		}
+		
 		if (empty($_COOKIE['cems'])) {
-			$sessionid = session_id();
-			if (empty($sessionid)) {
+			$sessionId = session_id();
+			if (empty($sessionId)) {
 				session_start();
-				$sessionid = session_id();
+				$sessionId = session_id();
 			}
 		} else {
-			$sessionid = $_COOKIE['cems'];
+			$sessionId = $_COOKIE['cems'];
 		}
 
 		if (empty($_COOKIE['cemv'])) {
-			$profileid = '';
-			if (function_exists('openssl_random_pseudo_bytes')) {
-				$profileid = bin2hex(openssl_random_pseudo_bytes(16));
-			}
-			if (empty($profileid)) {
-				$profileid = uniqid('', true);
+			$profileId = session_id();
+			if (empty($profileId)) {
+				session_start();
+				$profileId = session_id();
 			}
 		} else {
-			$profileid = $_COOKIE['cemv'];
+			$profileId = $_COOKIE['cemv'];
 		}
 
 		// Refresh cookies
 		if (empty($this->domain)) {
-			setcookie('cems', $sessionid, 0);
-			setcookie('cemv', $profileid, time() + self::VISITOR_COOKIE_TIME);
+			setcookie('cems', $sessionId, 0);
+			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME);
 		} else {
-			setcookie('cems', $sessionid, 0, '/', $this->domain);
-			setcookie('cemv', $profileid, time() + 1800, '/', self::VISITOR_COOKIE_TIME);
+			setcookie('cems', $sessionId, 0, '/', $this->domain);
+			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME, '/', $this->domain);
 		}
 		
-		return array($sessionid, $profileid);
+		$this->sessionId = $sessionId;
+		$this->profileId = $profileId;
+		
+		return array($this->sessionId, $this->profileId);
 	}
 	
 	private function getUserRecord() {
