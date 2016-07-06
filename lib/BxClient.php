@@ -303,6 +303,25 @@ class BxClient
 		}
 		return $this->chooseRequests[$index];
 	}
+
+	public function getChoiceIdRecommendationRequest($choiceId) {
+		foreach ($this->chooseRequests as $request){
+			if($request->getChoiceId() == $choiceId) {
+				return $request;
+			}
+		}
+		return null;
+	}
+
+	public function getRecommendationRequests(){
+		$requests = array();
+		foreach ($this->chooseRequests as $request){
+			if($request instanceof BxRecommendationRequest){
+				$requests[] = $request;
+			}
+		}
+		return $requests;
+	}
 	
 	public function getThriftChoiceRequest() {
 		$choiceInquiries = array();
