@@ -268,7 +268,27 @@ class BxFacets
 		}
 		return $final;
 	}
-	
+	public function getParentCategoriesHitCount($id){
+		$fieldName = 'categories';
+		$facetResponse = $this->getFacetResponse($fieldName);
+		$tree = $this->buildTree($facetResponse->values);
+		$treeEnd = $this->getSelectedTreeNode($tree);
+		if($treeEnd == null) {
+			return $tree['node']->hitCount;
+		}
+		if($treeEnd['node']->stringValue == $tree['node']->stringValue) {
+			return $tree['node']->hitCount;
+		}
+		$parent = $treeEnd;
+		while($parent) {
+			if($parent['node']->hierarchyId == $id){
+				return $parent['node']->hitCount;
+			}
+			$parent = $this->getTreeParent($tree, $parent);
+		}
+		return 0;
+	}
+
 	public function getSelectedValueLabel($fieldName, $index=0) {
 		if($fieldName == "") {
 			return "";
@@ -302,7 +322,16 @@ class BxFacets
 	public function getPriceFieldName() {
 		return $this->priceFieldName;
 	}
-	
+
+	public function getCategoriesKeyLabels() {
+		$categoryValueArray = array();
+		foreach ($this->getCategories() as $v){
+			$label = $this->getCategoryValueLabel($v);
+			$categoryValueArray[$label] = $v;
+		}
+		return $categoryValueArray;
+	}
+
 	public function getCategories() {
 		return $this->getFacetValues($this->getCategoryFieldName());
 	}

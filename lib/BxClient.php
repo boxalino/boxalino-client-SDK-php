@@ -401,7 +401,7 @@ class BxClient
 	
 	private function p13nautocompleteAll($requests) {
 		$requestBundle = new \com\boxalino\p13n\api\thrift\AutocompleteRequestBundle();
-	$requestBundle->requests = $requests;
+		$requestBundle->requests = $requests;
 		try {
 			return $this->getP13n()->autocompleteAll($requestBundle)->responses;
 		} catch(\Exception $e) {

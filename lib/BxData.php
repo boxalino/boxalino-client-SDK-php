@@ -97,7 +97,7 @@ class BxData
 		$params['totalOrderValueColumn'] = $totalOrderValueColumn;
 		$params['orderReceptionDateColumn'] = $orderDateIdColumn;
 		
-		$this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
+		return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
 	}
 	
 	public function addSourceFile($filePath, $sourceId, $container, $type, $format='CSV', $params=array(), $validate=true) {

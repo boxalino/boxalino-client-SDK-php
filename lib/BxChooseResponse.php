@@ -62,8 +62,14 @@ class BxChooseResponse
 	public function getSearchResultHitIds($searchResult) {
 		$ids = array();
 		if($searchResult) {
-			foreach ($searchResult->hits as $item) {
-				$ids[] = $item->values['id'][0];
+			if($searchResult->hits){
+				foreach ($searchResult->hits as $item) {
+					$ids[] = $item->values['id'][0];
+				}
+			}else{
+				foreach ($searchResult->hitsGroups as $hitGroup){
+					$ids[] = $hitGroup->groupValue;
+				}
 			}
 		}
         return $ids;

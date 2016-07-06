@@ -5,6 +5,7 @@ namespace com\boxalino\bxclient\v1;
 class BxRequest
 {
 	protected $language;
+	protected $groupBy;
 	protected $choiceId;
 	protected $min;
 	protected $max;
@@ -20,6 +21,9 @@ class BxRequest
 	protected $orFilters = false;
 	
 	public function __construct($language, $choiceId, $max=10, $min=0) {
+		if($choiceId == ''){
+			throw new \Exception('BxRequest created with null choiceId');
+		}
 		$this->language = $language;
 		$this->choiceId = $choiceId;
 		$this->min = (float)$min;
@@ -162,6 +166,14 @@ class BxRequest
 		$this->language = $language;
 	}
 
+	public function getGroupBy(){
+		return $this->groupBy;
+	}
+
+	public function setGroupBy($groupBy){
+		$this->groupBy = $groupBy;
+	}
+
 	public function getSimpleSearchQuery() {
 		
 		$searchQuery = new \com\boxalino\p13n\api\thrift\SimpleSearchQuery();
@@ -171,6 +183,9 @@ class BxRequest
 		$searchQuery->offset = $this->getOffset();
 		$searchQuery->hitCount = $this->getMax();
 		$searchQuery->queryText = $this->getQueryText();
+		if(in_array('products_group_id', $this->getReturnFields())){
+			$searchQuery->groupBy = $this->groupBy;
+		}
 		if(sizeof($this->getFilters()) > 0) {
 			$searchQuery->filters = array();
 			foreach($this->getFilters() as $filter) {
