@@ -8,7 +8,7 @@ class BxChooseResponse
 	private $bxRequests;
 	public function __construct($response, $bxRequests=array()) {
 		$this->response = $response;
-		$this->bxRequests = $bxRequests;
+		$this->bxRequests = is_array($bxRequests) ? $bxRequests : array($bxRequests);
 	}
 	
 	public function getResponse() {
@@ -16,13 +16,12 @@ class BxChooseResponse
 	}
 	
 	public function getChoiceResponseVariant($choice=null) {
-        $id = 0;
+
 		foreach($this->bxRequests as $k => $bxRequest) {
 			if($choice != null && $choice == $bxRequest->getChoiceId()) {
-				$id = $k;
+				return $this->getChoiceIdResponseVariant($k);
 			}
 		}
-		return $this->getChoiceIdResponseVariant($id);
 	}
 	
 	protected function getChoiceIdResponseVariant($id=0) {
@@ -52,6 +51,7 @@ class BxChooseResponse
 	}
 	
 	public function getVariantSearchResult($variant, $considerRelaxation=true) {
+
 		$searchResult = $variant->searchResult;
 		if($considerRelaxation && $variant->searchResult->totalHitCount == 0) {
 			return $this->getFirstPositiveSuggestionSearchResult($variant);
@@ -64,9 +64,9 @@ class BxChooseResponse
 		if($searchResult) {
 			if($searchResult->hits){
 				foreach ($searchResult->hits as $item) {
-					$ids[] = $item->values['id'][0];
+					$ids[] = $item->values['products_group_id'][0];
 				}
-			}else{
+			}elseif(isset($searchResult->hitsGroups)){
 				foreach ($searchResult->hitsGroups as $hitGroup){
 					$ids[] = $hitGroup->groupValue;
 				}
@@ -76,6 +76,7 @@ class BxChooseResponse
 	}
 
     public function getHitIds($choice=null, $considerRelaxation=true) {
+
 		$variant = $this->getChoiceResponseVariant($choice);
 		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation));
     }
@@ -119,13 +120,15 @@ class BxChooseResponse
 	}
 
     public function getFacets($choice=null, $considerRelaxation=true) {
+		
 		$variant = $this->getChoiceResponseVariant($choice);
 		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation);
 		$facets = $this->getRequestFacets($choice);
-		if(empty($facets)){
+
+		if(empty($facets) || $searchResult == null){
 			return null;
 		}
-		$facets->setFacetResponse($variant->searchResult->facetResponses);
+		$facets->setFacetResponse($searchResult->facetResponses);
 		return $facets;
     }
 
@@ -197,7 +200,7 @@ class BxChooseResponse
 	}
 	
 	protected function getSubPhraseSearchResult($queryText, $choice=null) {
-		if(!$this->areThereSubPhrases()) {
+		if(!$this->areThereSubPhrases($choice)) {
 			return null;
 		}
 		$variant = $this->getChoiceResponseVariant($choice);
