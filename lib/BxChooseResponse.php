@@ -18,7 +18,7 @@ class BxChooseResponse
 	public function getChoiceResponseVariant($choice=null, $count=0) {
 
 		foreach($this->bxRequests as $k => $bxRequest) {
-			if($choice != null && $choice == $bxRequest->getChoiceId()) {
+			if($choice == null || $choice == $bxRequest->getChoiceId()) {
 				if($count > 0){
 					$count--;
 					continue;
