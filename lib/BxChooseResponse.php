@@ -74,7 +74,7 @@ class BxChooseResponse
 		if($searchResult) {
 			if($searchResult->hits){
 				foreach ($searchResult->hits as $item) {
-					$ids[] = $item->values['products_group_id'][0];
+					$ids[] = $item->values['id'][0];
 				}
 			}elseif(isset($searchResult->hitsGroups)){
 				foreach ($searchResult->hitsGroups as $hitGroup){
