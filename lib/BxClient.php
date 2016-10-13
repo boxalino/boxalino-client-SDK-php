@@ -110,7 +110,7 @@ class BxClient
 		if (empty($_COOKIE['cems'])) {
 			$sessionId = session_id();
 			if (empty($sessionId)) {
-				session_start();
+				@session_start();
 				$sessionId = session_id();
 			}
 		} else {
@@ -120,7 +120,7 @@ class BxClient
 		if (empty($_COOKIE['cemv'])) {
 			$profileId = session_id();
 			if (empty($profileId)) {
-				session_start();
+				@session_start();
 				$profileId = session_id();
 			}
 		} else {
@@ -129,11 +129,11 @@ class BxClient
 
 		// Refresh cookies
 		if (empty($this->domain)) {
-			setcookie('cems', $sessionId, 0);
-			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME);
+			@setcookie('cems', $sessionId, 0);
+			@setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME);
 		} else {
-			setcookie('cems', $sessionId, 0, '/', $this->domain);
-			setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME, '/', $this->domain);
+			@setcookie('cems', $sessionId, 0, '/', $this->domain);
+			@setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME, '/', $this->domain);
 		}
 		
 		$this->sessionId = $sessionId;
