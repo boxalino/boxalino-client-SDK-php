@@ -10,6 +10,7 @@ class ExamplesTests extends TestCase
 	{
 		$account = $this->account;
 		$password = $this->password;
+		$print = false;
 		$exception = null;
 
 		//loading the data
