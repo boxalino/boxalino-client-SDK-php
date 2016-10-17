@@ -12,9 +12,10 @@ use com\boxalino\bxclient\v1\BxSearchRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
+$logs = array();  //optional, just used here in example to collect logs
 
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
@@ -36,21 +37,27 @@ try {
 	
 	//if the query is corrected, then print the corrrect query text
 	if($bxResponse->areResultsCorrected()) {
-		echo "Corrected query \"" . $queryText . "\" into \"" . $bxResponse->getCorrectedQuery() . "\"<br><br>";
-	}
+		$logs[] = "Corrected query \"" . $queryText . "\" into \"" . $bxResponse->getCorrectedQuery() . "\"";
+}
 	
 	//loop on the search response hit ids and print them
 	foreach($bxResponse->getHitIds() as $i => $id) {
-		echo "$i: returned id $id<br>";
+		$logs[] = "$i: returned id $id";
 	}
 	
 	if(sizeof($bxResponse->getHitIds()) == 0) {
-		echo "There are no corrected results. This might be normal, but it also might mean that the first execution of the corpus preparation was not done and published yet. Please refer to the example backend_data_init and make sure you have done the following steps at least once: 1) publish your data 2) run the prepareCorpus case 3) publish your data again";
+		$logs = "There are no corrected results. This might be normal, but it also might mean that the first execution of the corpus preparation was not done and published yet. Please refer to the example backend_data_init and make sure you have done the following steps at least once: 1) publish your data 2) run the prepareCorpus case 3) publish your data again";
 	}
-	
+
+	if(!isset($print) || $print){
+		echo implode("<br>" , $logs);
+	}
+
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

@@ -12,12 +12,13 @@ use com\boxalino\bxclient\v1\BxData;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 $languages = array('en'); //declare the list of available languages
 $isDev = false; //are the data to be pushed dev or prod data?
 $isDelta = false; //are the data to be pushed full data (reset index) or delta (add/modify index)?
+$logs = array(); //optional, just used here in example to collect logs
 
 //Create the Boxalino Data SDK instance
 $bxData = new BxData(new BxClient($account, $password, $domain), $languages, $isDev, $isDelta);
@@ -43,19 +44,24 @@ try {
 		$bxData->addSourceStringField($customerSourceKey, "country", "country");
 		$bxData->addSourceStringField($customerSourceKey, "zip", "zip");
 		
-		echo "publish the data specifications<br>";
+		$logs[] = "publish the data specifications";
 		$bxData->pushDataSpecifications();
-		
-		echo "publish the api owner changes<br>"; //if the specifications have changed since the last time they were pushed
+
+		$logs[] = "publish the api owner changes"; //if the specifications have changed since the last time they were pushed
 		$bxData->publishChanges();
 	}
-	
-	echo "push the data for data sync<br>";
+
+	$logs[] = "push the data for data sync";
+	if(!isset($print) || $print){
+		echo implode("<br>", $logs);
+	}
 	$bxData->pushData();
 	
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

@@ -12,9 +12,10 @@ use com\boxalino\bxclient\v1\BxSearchRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
+$logs = array(); //optional, just used here in example to collect logs
 
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
@@ -42,16 +43,22 @@ try {
 	$bxResponse = $bxClient->getResponse();
 	
 	//indicate the search made with the number of results found
-	echo "Results for query \"" . $queryText . "\" (" . $bxResponse->getTotalHitCount() . "):<br><br>";
-	
+	$logs[] = "Results for query \"" . $queryText . "\" (" . $bxResponse->getTotalHitCount() . "):<br>";
+
 	//loop on the search response hit ids and print them
 	foreach($bxResponse->getHitIds() as $i => $id) {
-		echo "$i: returned id $id<br>";
+		$logs[] = "$i: returned id $id";
 	}
-	
+
+	if(!isset($print) || $print){
+		echo implode("<br>", $logs);
+	}
+
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

@@ -12,9 +12,10 @@ use com\boxalino\bxclient\v1\BxAutocompleteRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+$account = "boxalino_automated_tests"; // your account name
+$password = "boxalino_automated_tests"; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
+$logs = array(); //optional, just used here in example to collect logs
 
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
@@ -37,38 +38,43 @@ try {
 	
 	//make the query to Boxalino server and get back the response for all requests
 	$bxAutocompleteResponse = $bxClient->getAutocompleteResponse();
-	
+
 	//loop on the search response hit ids and print them
-	echo "textual suggestions for \"$queryText\":<br>";
+	$logs[] = "textual suggestions for \"$queryText\":<br>";
 	foreach($bxAutocompleteResponse->getTextualSuggestions() as $suggestion) {
-		echo "<div style=\"border:1px solid; padding:10px; margin:10px\">";
-		echo "<h3>$suggestion</b></h3>";
-		
-		echo "item suggestions for suggestion \"$suggestion\":<br><br>";
+		$logs[] = "<div style=\"border:1px solid; padding:10px; margin:10px\">";
+		$logs[] = "<h3>$suggestion</b></h3>";
+
+		$logs[] = "item suggestions for suggestion \"$suggestion\":<br>";
 		//loop on the search response hit ids and print them
 		foreach($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitFieldValues($fieldNames) as $id => $fieldValueMap) {
-			echo "<div>$id";
+			$logs[] = "<div>$id";
 			foreach($fieldValueMap as $fieldName => $fieldValues) {
-				echo " - $fieldName: " . implode(',', $fieldValues) . "";
+				$logs[] = " - $fieldName: " . implode(',', $fieldValues) . "";
 			}
-			echo "</div>";
+			$logs[] = "</div>";
 		}
-		echo "</div>";
+		$logs[] = "</div>";
 	}
-	
-	echo "<br>global item suggestions for \"$queryText\":<br><br>";
+
+	$logs[] = "global item suggestions for \"$queryText\":<br>";
 	//loop on the search response hit ids and print them
 	foreach($bxAutocompleteResponse->getBxSearchResponse()->getHitFieldValues($fieldNames) as $id => $fieldValueMap) {
-		echo "<div>$id";
+		$item = "$id";
 		foreach($fieldValueMap as $fieldName => $fieldValues) {
-			echo " - $fieldName: " . implode(',', $fieldValues) . "";
+			$item .= " - $fieldName: " . implode(',', $fieldValues) . "<br>";
 		}
-		echo "</div>";
+		$logs[]= $item;
 	}
-	
+	if(!isset($print) || $print){
+		echo implode('', $logs);
+	}
+
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

@@ -12,8 +12,8 @@ use com\boxalino\bxclient\v1\BxSearchRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 
 //Create the Boxalino Client SDK instance
@@ -35,14 +35,17 @@ try {
 	$bxResponse = $bxClient->getResponse();
 	
 	//print the request object which is sent to our server (please provide it to Boxalino in all your support requests)
-	echo "<pre>";
-	var_dump($bxClient->getThriftChoiceRequest());
-	echo "</pre>";
-	exit;
+	if(!isset($print) || $print){
+		echo "<pre>";
+		var_dump($bxClient->getThriftChoiceRequest());
+		echo "</pre>";
+	}
 	
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

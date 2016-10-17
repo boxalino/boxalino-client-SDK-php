@@ -14,7 +14,6 @@ BxClient::LOAD_CLASSES($libPath);
 //required parameters you should set for this example to work
 //$account = ""; // your account name
 //$password = ""; // your account password
-
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 $languages = array('en'); //declare the list of available languages
 $isDev = false; //are the data to be pushed dev or prod data?

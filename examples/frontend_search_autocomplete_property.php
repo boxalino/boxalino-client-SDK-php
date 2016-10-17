@@ -12,16 +12,17 @@ use com\boxalino\bxclient\v1\BxAutocompleteRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
+$logs = array(); //optional, just used here in example to collect logs
 
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
 $bxClient = new BxClient($account, $password, $domain);
 
 try {
-	$language = "de"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
+	$language = "en"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
 	$queryText = "a"; // a search query to be completed
 	$textualSuggestionsHitCount = 10; //a maximum number of search textual suggestions to return in one page
 	$property = 'categories'; //the properties to do a property autocomplete request on, be careful, except the standard "categories" which always work, but return values in an encoded way with the path ( "ID/root/level1/level2"), no other properties are available for autocomplete request on by default, to make a property "searcheable" as property, you must set the field parameter "propertyIndex" to "true"
@@ -36,21 +37,27 @@ try {
 	
 	//set the request
 	$bxClient->setAutocompleteRequest($bxRequest);
-	
 	//make the query to Boxalino server and get back the response for all requests
 	$bxAutocompleteResponse = $bxClient->getAutocompleteResponse();
-	
+
 	//loop on the search response hit ids and print them
-	echo "property suggestions for \"$queryText\":<br>";
+	$logs[] = "property suggestions for \"$queryText\":<br>";
 	foreach($bxAutocompleteResponse->getPropertyHitValues($property) as $hitValue) {
 		$label = $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue);
 		$totalHitCount = $bxAutocompleteResponse->getPropertyHitValueTotalHitCount($property, $hitValue);
-		echo "<div>$hitValue</b> : label=$label, totalHitCount=$totalHitCount</div>";
+		$result = "<b>$hitValue:</b><ul><li>label=$label</li> <li>totalHitCount=$totalHitCount</li></ul>";
+		$logs[] = $result;
 	}
-	
+
+	if(!isset($print) || $print){
+		echo implode("<br>", $logs);
+	}
+
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }

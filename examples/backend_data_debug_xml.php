@@ -12,8 +12,8 @@ use com\boxalino\bxclient\v1\BxData;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = ""; // your account name
-$password = ""; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 $languages = array('en'); //declare the list of available languages
 $isDev = false; //are the data to be pushed dev or prod data?
@@ -37,12 +37,16 @@ try {
 	$bxData->addSourceDiscountedPriceField($sourceKey, "discounted_price");
 	$bxData->addSourceLocalizedTextField($sourceKey, "short_description", array("en"=>"short_description_en"));
 	$bxData->addSourceStringField($sourceKey, "sku", "sku");
-	
-	echo htmlentities($bxData->getXML());
+
+	if(!isset($print) || $print){
+		echo htmlentities($bxData->getXML());
+	}
 	
 } catch(\Exception $e) {
 	
 	//be careful not to print the error message on your publish web-site as sensitive information like credentials might be indicated for debug purposes
-	echo $e->getMessage();
-	exit;
+	$exception = $e->getMessage();
+	if(!isset($print) || $print){
+		echo $exception;
+	}
 }
