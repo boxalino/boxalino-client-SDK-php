@@ -1,0 +1,25 @@
+{
+    "name": "boxalino/boxalino-client-sdk-php",
+    "description": "The Boxalino Client SDK provides a simple and efficient usage of Boxalino Search & Recommendations services (based on the p13n Thrift client libraries as separately provided in respective git-hub repositories) and to Boxalino Data Intelligence especially for Data Synchronization (define the structure of your data, push and publish your data structure configuration, push data in dev/prod and full/delta to Boxalino).",
+    "type": "library",
+    "keywords": [
+        "boxalino"
+    ],
+    "homepage": "http://www.boxalino.com",
+    "license": "",
+    "authors": [
+        {
+            "name": "Greg Sherwood",
+            "role": "lead"
+        }
+    ],
+    "support": {
+        "email": "support@boxalino.com"
+    },
+    "require": {
+        "php": ">=5.1.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
+    }
+}
