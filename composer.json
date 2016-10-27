@@ -25,7 +25,14 @@
     },
     "autoload": {
         "psr-4": {
-            "com\\boxalino\\bxclient\\v1\\": "lib"
+            "com\\boxalino\\bxclient\\v1\\": "lib",
+            "Thrift\\Transport\\": "lib/Thrift/Transport"
+        },
+        "classmap": ["lib/Types.php", "lib/P13nService.php"]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
         }
     }
 }
