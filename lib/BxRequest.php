@@ -183,9 +183,8 @@ class BxRequest
 		$searchQuery->offset = $this->getOffset();
 		$searchQuery->hitCount = $this->getMax();
 		$searchQuery->queryText = $this->getQueryText();
-		if(in_array('products_group_id', $this->getReturnFields())){
-			$searchQuery->groupBy = $this->groupBy;
-		}
+		$searchQuery->groupBy = $this->groupBy;
+
 		if(sizeof($this->getFilters()) > 0) {
 			$searchQuery->filters = array();
 			foreach($this->getFilters() as $filter) {
