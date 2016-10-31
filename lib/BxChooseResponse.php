@@ -253,4 +253,17 @@ class BxChooseResponse
 		}
 		return array();
     }
+	
+	public function toJson($fields) {
+		$object = array();
+		$object['hits'] = array();
+		foreach($this->getHitFieldValues($fields) as $id => $fieldValueMap) {
+			$hitFieldValues = array();
+			foreach($fieldValueMap as $fieldName => $fieldValues) {
+				$hitFieldValues[$fieldName] = array('values'=>$fieldValues);
+			}
+			$object['hits'][] = array('id'=>$id, 'fieldValues'=>$hitFieldValues);
+		}
+		return json_encode($object);
+	}
 }

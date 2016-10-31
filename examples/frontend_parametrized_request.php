@@ -12,8 +12,8 @@ use com\boxalino\bxclient\v1\BxParametrizedRequest;
 BxClient::LOAD_CLASSES($libPath);
 
 //required parameters you should set for this example to work
-$account = "siroop"; // your account name
-$password = "yewu7oqz1nk9qghp"; // your account password
+//$account = ""; // your account name
+//$password = ""; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 $logs = array(); //optional, just used here in example to collect logs
 $isDev = true;
@@ -48,7 +48,7 @@ try {
 	$bxReturnFields = array('id'); //the list of fields which should be returned directly by Boxalino, the others will be retrieved through a call-back function
 	$getItemFieldsCB = "getItemFieldsCB";
 	
-	//create similar recommendations request
+	//create the request and set the parameter prefix values
 	$bxRequest = new BxParametrizedRequest($language, $choiceId, $hitCount, 0, $bxReturnFields, $getItemFieldsCB);
 	$bxRequest->setRequestWeightedParametersPrefix($requestWeightedParametersPrefix);
 	$bxRequest->setRequestFiltersPrefix($requestFiltersPrefix);
@@ -92,13 +92,7 @@ try {
 	
 	//loop on the recommended response hit ids and print them
 	$logs[] = "<h3>results</h3>";
-	foreach($bxResponse->getHitFieldValues($bxRequest->getAllReturnFields()) as $id => $fieldValueMap) {
-		$entity = "<h3>$id</h3>";
-		foreach($fieldValueMap as $fieldName => $fieldValues) {
-			$entity .= "$fieldName: " . implode(',', $fieldValues) . " | ";
-		}
-		$logs[] = $entity;
-	}
+	$logs[] = $bxResponse->toJson($bxRequest->getAllReturnFields());
 
 	if(!isset($print) || $print){
 		echo implode("<br>",$logs);
