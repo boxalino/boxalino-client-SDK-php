@@ -19,7 +19,7 @@ The Boxalino Client SDK are particularly interesting for integrators of Boxalino
 
 ## Installation
 
-1. Before you start to test, make sure you download all the dependencies via composer.
+1. Before you start to test, make sure you download all the dependencies via composer (first download and install it form getcomposer.org, then run composer install in your project directory).
 2. Copy the lib folder (with the Thrift library) wherever you want (it doesn't need to be called "lib")
 3. Take any of the examples in the "examples" folder to test (if $libPath as per the examples is set to the path to your lib folder, the rest should work out of the box)
 4. Make sure you have received your credentials (account and password) from Boxalino to access your account (if you don't have them, please contact support@boxalino.com)

@@ -28,15 +28,13 @@ class BxClient
 	
 	private $sessionId = null;
 	private $profileId = null;
+	
+	private $requestMap = array();
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
-		if (isset($_REQUEST['_d_bx_account']) && isset($_REQUEST['_d_bx_password'])) {
-			// for debug purposes only, never include credentials in request
-			$account = $_REQUEST['_d_bx_account'];
-			$password = $_REQUEST['_d_bx_password'];
-		}
 		$this->account = $account;
 		$this->password = $password;
+		$this->requestMap = $_REQUEST;
 		$this->isDev = $isDev;
 		$this->host = $host;
 		if($this->host == null) {
@@ -65,6 +63,10 @@ class BxClient
 		$this->domain = $domain;
 	}
 	
+	public function setRequestMap($requestMap) {
+		$this->requestMap = $requestMap;
+	}
+	
 	public static function LOAD_CLASSES($libPath) {
 		
 		$cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
@@ -77,6 +79,7 @@ class BxClient
 		require_once($libPath . "/BxFilter.php");
 		require_once($libPath . "/BxRequest.php");
 		require_once($libPath . "/BxRecommendationRequest.php");
+		require_once($libPath . "/BxParametrizedRequest.php");
 		require_once($libPath . "/BxSearchRequest.php");
 		require_once($libPath . "/BxAutocompleteRequest.php");
 		require_once($libPath . "/BxSortFields.php");
@@ -215,6 +218,19 @@ class BxClient
 		$this->requestContextParameters = array();
 	}
 	
+	public function getRequestContextParameters() {
+		$params = $this->requestContextParameters;
+		foreach($this->chooseRequests as $request) {
+			foreach($request->getRequestContextParameters() as $k => $v) {
+				if(!is_array($v)) {
+					$v = array($v);
+				}
+				$params[$k] = $v;
+			}
+		}
+		return $params;
+	}
+	
 	protected function getRequestContext()
 	{
 		list($sessionid, $profileid) = $this->getSessionAndProfile();
@@ -227,13 +243,13 @@ class BxClient
 			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
 			'User-URL'	   => array($this->getCurrentURL())
 		);
-		foreach($this->requestContextParameters as $k => $v) {
+		foreach($this->getRequestContextParameters() as $k => $v) {
 			$requestContext->parameters[$k] = $v;
 		}
 
-		if (isset($_REQUEST['p13nRequestContext']) && is_array($_REQUEST['p13nRequestContext'])) {
+		if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext'])) {
 			$requestContext->parameters = array_merge(
-				$_REQUEST['p13nRequestContext'],
+				$this->requestMap['p13nRequestContext'],
 				$requestContext->parameters
 			);
 		}
@@ -272,7 +288,7 @@ class BxClient
 	private function p13nchoose($choiceRequest) {
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
-			if(isset($_REQUEST['dev_bx_disp']) && $_REQUEST['dev_bx_disp'] == 'true') {
+			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
 				echo "<pre><h1>Choice Request</h1>";
 				var_dump($choiceRequest);
 				echo "<br><h1>Choice Response</h1>";
@@ -288,6 +304,7 @@ class BxClient
 	
 	public function addRequest($request) {
 		$request->setDefaultIndexId($this->getAccount());
+		$request->setDefaultRequestMap($this->requestMap);
 		$this->chooseRequests[] = $request;
 	}
 	

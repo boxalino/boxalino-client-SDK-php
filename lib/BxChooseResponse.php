@@ -91,6 +91,14 @@ class BxChooseResponse
 		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance), $fieldId);
     }
 	
+	public function retrieveHitFieldValues($item, $field, $fields, $hits) {
+		$fieldValues = array();
+		foreach($this->bxRequests as $bxRequest) {
+			$fieldValues = array_merge($fieldValues, $bxRequest->retrieveHitFieldValues($item, $field, $fields, $hits));
+		}
+		return $fieldValues;
+	}
+	
 	public function getSearchHitFieldValues($searchResult, $fields=null) {
 		$fieldValues = array();
 		if($searchResult) {
@@ -106,7 +114,7 @@ class BxChooseResponse
 						}
 					}
 					if(!isset($fieldValues[$item->values['id'][0]][$field])) {
-						$fieldValues[$item->values['id'][0]][$field] = array();
+						$fieldValues[$item->values['id'][0]][$field] = $this->retrieveHitFieldValues($item, $field, $searchResult->hits, $finalFields);
 					}
 				}
 			}
