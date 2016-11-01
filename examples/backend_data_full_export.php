@@ -94,12 +94,19 @@ try {
     //add a csv file as main customer file
     $bxData->setCSVTransactionFile($transactionFile, $orderIdColumn, $transactionProductIdColumn, $transactionCustomerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $transactionProductIdField, $transactionCustomerIdField);
 
+    //prepare autocomplete index
+    $bxData->prepareCorpusIndex();
+    $fields = array("products_color");
+    $bxData->prepareAutocompleteIndex($fields);
+
     $logs[] = "publish the data specifications";
     $bxData->pushDataSpecifications();
 
     $logs[] = "publish the api owner changes"; //if the specifications have changed since the last time they were pushed
     $bxData->publishChanges();
 
+    $logs[] = "push the data for data sync";
+    $bxData->pushData();
     if(!isset($print) || $print){
         echo implode("<br>", $logs);
     }

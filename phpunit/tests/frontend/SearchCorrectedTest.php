@@ -11,7 +11,7 @@ class SearchCorrectedTest extends TestCase{
         $password = $this->password;
         $print = false;
         $exception = null;
-        $hitIds = array(41,1940,1065,1151,1241,1321,1385,1401,1497,1609);
+        $hitIds = array(41,1940,1065,1151,1241,1321,1385,1401,1609,1801);
 
         include("../examples/frontend_search_corrected.php");
         $this->assertEquals($exception, null);
