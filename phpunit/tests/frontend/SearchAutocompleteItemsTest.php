@@ -16,7 +16,7 @@ class SearchAutocompleteItemsTest extends TestCase{
         include("../examples/frontend_search_autocomplete_items.php");
         $this->assertEquals($exception, null);
         $itemSuggestions = $bxAutocompleteResponse->getBxSearchResponse()->getHitFieldValues($fieldNames);
-        $this->assertEquals(sizeof($itemSuggestions), 2);
+        $this->assertEquals(sizeof($itemSuggestions), 5);
         $this->assertEquals($bxAutocompleteResponse->getTextualSuggestions(), $textualSuggestions);
     }
 }

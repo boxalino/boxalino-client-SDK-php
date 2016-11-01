@@ -22,7 +22,7 @@ class SearchAutocompleteItemsBundledTest extends TestCase{
         //first response
         $this->assertEquals($bxAutocompleteResponses[0]->getTextualSuggestions(),$firstTextualSuggestions);
         //global ids
-        $this->assertEquals(array_keys($bxAutocompleteResponses[0]->getBxSearchResponse()->getHitFieldValues($fieldNames)), array(1151,1673));
+        $this->assertEquals(array_keys($bxAutocompleteResponses[0]->getBxSearchResponse()->getHitFieldValues($fieldNames)), array(115,131,227,355,611));
 
         //second response
         $this->assertEquals($bxAutocompleteResponses[1]->getTextualSuggestions(),$secondTextualSuggestions);

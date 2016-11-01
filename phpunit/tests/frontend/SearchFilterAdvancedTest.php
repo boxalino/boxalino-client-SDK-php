@@ -14,6 +14,6 @@ class SearchFilterAdvancedTest extends TestCase{
         
         include("../examples/frontend_search_filter_advanced.php");
         $this->assertEquals($exception, null);
-        $this->assertEquals(sizeof($bxResponse->getHitFieldValues($fieldNames)), 1);
+        $this->assertEquals(sizeof($bxResponse->getHitFieldValues($fieldNames)), 10);
     }
 }
