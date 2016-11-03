@@ -103,7 +103,12 @@ class BxClient
 		return $this->password;
 	}
 	
-	private function getSessionAndProfile() {
+	public function setSessionAndProfile($sessionId, $profileId) {
+		$this->sessionId = $sessionId;
+		$this->profileId = $profileId;
+	}
+	
+	public function getSessionAndProfile() {
 		
 		if($this->sessionId != null && $this->profileId != null) {
 			return array($this->sessionId, $this->profileId);
