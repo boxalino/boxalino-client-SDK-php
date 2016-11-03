@@ -202,7 +202,7 @@ class BxClient
 
 		return $ip;
 	}
-	
+
 	protected function getCurrentURL()
 	{
 		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
@@ -222,7 +222,21 @@ class BxClient
 	public function resetRequestContextParameter() {
 		$this->requestContextParameters = array();
 	}
-	
+
+
+	protected function getBasicRequestContextParameters()
+	{
+		list($sessionid, $profileid) = $this->getSessionAndProfile();
+
+		return array(
+			'User-Agent'	 => array(@$_SERVER['HTTP_USER_AGENT']),
+			'User-Host'	  => array($this->getIP()),
+			'User-SessionId' => array($sessionid),
+			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
+			'User-URL'	   => array($this->getCurrentURL())
+		);
+	}
+
 	public function getRequestContextParameters() {
 		$params = $this->requestContextParameters;
 		foreach($this->chooseRequests as $request) {
@@ -238,16 +252,8 @@ class BxClient
 	
 	protected function getRequestContext()
 	{
-		list($sessionid, $profileid) = $this->getSessionAndProfile();
-		
 		$requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
-		$requestContext->parameters = array(
-			'User-Agent'	 => array(@$_SERVER['HTTP_USER_AGENT']),
-			'User-Host'	  => array($this->getIP()),
-			'User-SessionId' => array($sessionid),
-			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
-			'User-URL'	   => array($this->getCurrentURL())
-		);
+		$requestContext->parameters = $this->getBasicRequestContextParameters();
 		foreach($this->getRequestContextParameters() as $k => $v) {
 			$requestContext->parameters[$k] = $v;
 		}
