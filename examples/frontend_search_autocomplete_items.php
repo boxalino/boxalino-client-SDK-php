@@ -16,10 +16,12 @@ $account = "boxalino_automated_tests"; // your account name
 $password = "boxalino_automated_tests"; // your account password
 $domain = ""; // your web-site domain (e.g.: www.abc.com)
 $logs = array(); //optional, just used here in example to collect logs
+$isDev = false;
+$host = isset($host) ? $host : "cdn.bx-cloud.com";
 
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
-$bxClient = new BxClient($account, $password, $domain);
+$bxClient = new BxClient($account, $password, $domain, $isDev, $host);
 
 try {
 	$language = "en"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)

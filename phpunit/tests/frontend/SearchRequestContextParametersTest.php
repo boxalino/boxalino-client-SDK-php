@@ -7,12 +7,17 @@ class SearchRequestContextParametersTest extends TestCase{
     private $password = "boxalino_automated_tests";
 
     public function test_frontend_search_request_context_parameters(){
-        $account = $this->account;
-        $password = $this->password;
-        $print = false;
-        $exception = null;
+        global $argv;
+        $bxHosts = isset($argv[2]) ? array($argv[2]) : ['cdn.bx-cloud.com', 'api.bx-cloud.com'];
+        foreach ($bxHosts as $bxHost) {
+            $account = $this->account;
+            $password = $this->password;
+            $host = $bxHost;
+            $print = false;
+            $exception = null;
 
-        include("../examples/frontend_search_request_context_parameters.php");
-        $this->assertEquals($exception, null);
+            include("../examples/frontend_search_request_context_parameters.php");
+            $this->assertEquals($exception, null);
+        }
     }
 }
