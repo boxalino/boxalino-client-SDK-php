@@ -21,6 +21,30 @@ class SearchBasicTest extends TestCase
 			include("../examples/frontend_search_basic.php");
 			$this->assertEquals($exception, null);
 			$this->assertEquals($bxResponse->getHitIds(), $hitIds);
+			
+			//testing the result of the frontend search basic case with semantic filtering blue => products_color=Blue
+			$queryText = "blue";
+			include("../examples/frontend_search_basic.php");
+			$this->assertEquals($exception, null);
+			$this->assertEquals($bxResponse->getTotalHitCount(), 77);
+			
+			//testing the result of the frontend search basic case with semantic filtering forcing zero results pink => products_color=Pink
+			$queryText = "pink";
+			include("../examples/frontend_search_basic.php");
+			$this->assertEquals($exception, null);
+			$this->assertEquals($bxResponse->getTotalHitCount(), 0);
+			
+			//testing the result of the frontend search basic case with semantic filtering setting a filter on a specific product only if the search shows zero results (this one should not do it because workout shows results)
+			$queryText = "workout";
+			include("../examples/frontend_search_basic.php");
+			$this->assertEquals($exception, null);
+			$this->assertEquals($bxResponse->getTotalHitCount(), 28);
+			
+			//testing the result of the frontend search basic case with semantic filtering setting a filter on a specific product only if the search shows zero results (this one should do it because workoutoup shows no results)
+			$queryText = "workoutoup";
+			include("../examples/frontend_search_basic.php");
+			$this->assertEquals($exception, null);
+			$this->assertEquals($bxResponse->getTotalHitCount(), 1);
 		}
 	}
 }

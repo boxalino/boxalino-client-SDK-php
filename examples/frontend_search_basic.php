@@ -25,9 +25,9 @@ $bxClient = new BxClient($account, $password, $domain, $isDev, $host);
 
 try {
 	$language = "en"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
-	$queryText = "women"; // a search query
+	$queryText = isset($queryText) ? $queryText : "women"; // a search query
 	$hitCount = 10; //a maximum number of search result to return in one page
-
+	
 	//create search request
 	$bxRequest = new BxSearchRequest($language, $queryText, $hitCount);
 	
