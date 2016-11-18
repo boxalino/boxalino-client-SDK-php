@@ -18,6 +18,7 @@ class SearchBasicTest extends TestCase
 			$hitIds = array(41, 1940, 1065, 1151, 1241, 1321, 1385, 1401, 1609, 1801);
 
 			//testing the result of the frontend search basic case
+			$queryText = "women";
 			include("../examples/frontend_search_basic.php");
 			$this->assertEquals($exception, null);
 			$this->assertEquals($bxResponse->getHitIds(), $hitIds);
