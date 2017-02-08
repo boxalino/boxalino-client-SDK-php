@@ -45,6 +45,11 @@ class BxAutocompleteResponse
 		return $hit->searchResult->totalHitCount;
 	}
 	
+	public function getTextualSuggestionHighlighted($suggestion) {
+		$hit = $this->getTextualSuggestionHit($suggestion);
+		return $hit->highlighted;
+	}
+	
 	public function getBxSearchResponse($textualSuggestion = null) {
 		$searchResult = $textualSuggestion == null ? $this->getResponse()->prefixSearchResult : $this->getTextualSuggestionHit($textualSuggestion)->searchResult;
 		return new \com\boxalino\bxclient\v1\BxChooseResponse($searchResult, $this->bxAutocompleteRequest->getBxSearchRequest());

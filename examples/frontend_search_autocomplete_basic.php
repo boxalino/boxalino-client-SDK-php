@@ -40,7 +40,7 @@ try {
 	//loop on the search response hit ids and print them
 	$logs[] = "textual suggestions for \"$queryText\":";
 	foreach($bxAutocompleteResponse->getTextualSuggestions() as $suggestion) {
-		$logs[] = "$suggestion";
+		$logs[] = $bxAutocompleteResponse->getTextualSuggestionHighlighted($suggestion);
 	}
 	
 	if(sizeof($bxAutocompleteResponse->getTextualSuggestions()) == 0) {
