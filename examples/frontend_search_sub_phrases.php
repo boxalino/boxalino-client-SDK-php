@@ -37,9 +37,13 @@ try {
 	//make the query to Boxalino server and get back the response for all requests
 	$bxResponse = $bxClient->getResponse();
 	
+	if($bxResponse->areResultsCorrectedAndAlsoProvideSubPhrases()) {
+		$logs[] = "Corrected query \"" . $queryText . "\" into \"" . $bxResponse->getCorrectedQuery() . "\"";
+	}
+	
 	//check if the system has generated sub phrases results
 	if($bxResponse->areThereSubPhrases()) {
-		$logs[] = "No results found for all words in " . $queryText . ", but following partial matches were found:<br\>";
+		$logs[] = "No results found for all words in " . $queryText . ", but following partial matches were found:";
 		foreach($bxResponse->getSubPhrasesQueries() as $subPhrase) {
 			$logs[] = "Results for \"" . $subPhrase . "\" (" . $bxResponse->getSubPhraseTotalHitCount($subPhrase) . " hits):";
 			//loop on the search response hit ids and print them
@@ -55,7 +59,7 @@ try {
 		}
 	}
 	if(!isset($print) || $print){
-		echo implode("<br\>", $logs);
+		echo implode("<br/>", $logs);
 	}
 	
 } catch(\Exception $e) {
