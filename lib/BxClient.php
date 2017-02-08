@@ -350,6 +350,16 @@ class BxClient
 	}
 	
 	public function getThriftChoiceRequest() {
+		
+		if(sizeof($this->chooseRequests) == 0 && sizeof($this->autocompleteRequests) > 0) {
+			list($sessionid, $profileid) = $this->getSessionAndProfile();
+			$userRecord = $this->getUserRecord();
+			$p13nrequests = array_map(function($request) use(&$profileid, &$userRecord) {
+				return $request->getAutocompleteThriftRequest($profileid, $userRecord);
+			}, $this->autocompleteRequests);
+			return $p13nrequests;
+		}
+		
 		$choiceInquiries = array();
 		
 		foreach($this->chooseRequests as $request) {
@@ -370,6 +380,10 @@ class BxClient
 	
 	protected function choose() {
 		$this->chooseResponses = $this->p13nchoose($this->getThriftChoiceRequest());
+	}
+	
+	public function flushResponses() {
+		$this->chooseResponses = null;
 	}
 	
 	public function getResponse() {
