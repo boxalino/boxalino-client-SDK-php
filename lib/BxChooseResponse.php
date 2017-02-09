@@ -204,9 +204,9 @@ class BxChooseResponse
 		return null;
 	}
 	
-	public function areThereSubPhrases($choice=null, $count=0) {
+	public function areThereSubPhrases($choice=null, $count=0, $maxBaseResults=0) {
 		$variant = $this->getChoiceResponseVariant($choice, $count);
-		return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0;
+		return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0 && $this->getTotalHitCount($choice, false, $count) <= $maxBaseResults;
 	}
 	
 	public function getSubPhrasesQueries($choice=null, $count=0) {
