@@ -128,14 +128,22 @@ class BxFacets
 		return null;
 	}
 	
-	protected function getFirstNodeWithSeveralChildren($tree) {
+	protected function getFirstNodeWithSeveralChildren($tree, $minCategoryLevel=0) {
 		if(sizeof($tree['children']) == 0) {
 			return null;
 		}
-		if(sizeof($tree['children']) > 1) {
+		if(sizeof($tree['children']) > 1 && $minCategoryLevel <= 0) {
 			return $tree;
 		}
-		return $this->getFirstNodeWithSeveralChildren($tree['children'][0]);
+		$bestTree = $tree['children'][0];
+		if(sizeof($tree['children']) > 1) {
+			foreach($tree['children'] as $node) {
+				if($node['node']->hitCount > $bestTree['node']->hitCount) {
+					$bestTree = $node;
+				}
+			}
+		}
+		return $this->getFirstNodeWithSeveralChildren($bestTree, $minCategoryLevel-1);
 	}
 	
 	public function getSelectedTreeNode($tree) {
@@ -158,7 +166,7 @@ class BxFacets
 		return null;
 	}
 	
-	protected function getFacetKeysValues($fieldName) {
+	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
 		if($fieldName == "") {
 			return array();
 		}
@@ -169,7 +177,7 @@ class BxFacets
 		case 'hierarchical':
 			$tree = $this->buildTree($facetResponse->values);
 			$tree = $this->getSelectedTreeNode($tree);
-			$node = $this->getFirstNodeWithSeveralChildren($tree);
+			$node = $this->getFirstNodeWithSeveralChildren($tree, $minCategoryLevel);
 			if($node) {
 				foreach($node['children'] as $node) {
 					$facetValues[$node['node']->stringValue] = $node['node'];
@@ -186,6 +194,16 @@ class BxFacets
 				$facetValues[$facetValue->stringValue] = $facetValue;
 			}
 			break;
+		}
+		if($ranking == 'counter') {
+			uasort($facetValues, function ($a, $b) {
+				if ($a->hitCount > $b->hitCount) {
+					return -1;
+				} elseif ($b->hitCount > $a->hitCount) {
+					return 1;
+				}
+				return 0;
+			});
 		}
         return $facetValues;
 	}
@@ -342,16 +360,18 @@ class BxFacets
 		return $categoryValueArray;
 	}
 
-	public function getCategories() {
-		return $this->getFacetValues($this->getCategoryFieldName());
+	public function getCategories($ranking='alphabetical', $minCategoryLevel=0) {
+		return $this->getFacetValues($this->getCategoryFieldName(), $ranking, $minCategoryLevel);
 	}
 	
 	public function getPriceRanges() {
 		return $this->getFacetValues($this->getPriceFieldName());
 	}
 
-    public function getFacetValues($fieldName) {
-		return array_keys($this->getFacetKeysValues($fieldName));
+	private $lastSetMinCategoryLevel = 0;
+    public function getFacetValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
+		$this->lastSetMinCategoryLevel = $minCategoryLevel;
+		return array_keys($this->getFacetKeysValues($fieldName, $ranking, $minCategoryLevel));
     }
 	
 	public function getFacetLabel($fieldName) {
@@ -371,7 +391,7 @@ class BxFacets
 			return array($valueLabel, $paramValue, null, true);
 		}
 
-        $keyValues = $this->getFacetKeysValues($fieldName);
+        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
 
 		if(is_array($facetValue)){
 			$facetValue = reset($facetValue);
@@ -379,6 +399,7 @@ class BxFacets
 		if(!isset($keyValues[$facetValue])) {
 			throw new \Exception("Requesting an invalid facet values for fieldname: " . $fieldName . ", requested value: " . $facetValue . ", available values . " . implode(',', array_keys($keyValues)));
 		}
+
 		$type = $this->getFacetType($fieldName);
 		$fv = isset($keyValues[$facetValue]) ? $keyValues[$facetValue] : null;
 		switch($type) {
@@ -416,7 +437,7 @@ class BxFacets
 	public function getPriceValueLabel($facetValue) {
 		return $this->getFacetValueLabel($this->getPriceFieldName(), $facetValue);
 	}
-	
+
 	public function getFacetValueLabel($fieldName, $facetValue) {
         list($label, $parameterValue, $hitCount, $selected) = $this->getFacetValueArray($fieldName, $facetValue);
 		return $label;
