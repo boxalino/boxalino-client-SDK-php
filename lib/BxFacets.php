@@ -153,6 +153,34 @@ class BxFacets
 		return $defaultExtraInfoValue;
 	}
 	
+	public function getFacetLabel($fieldName, $language=null, $defaultValue=null) {
+		if(isset($this->facets[$fieldName])) {
+			$defaultValue = $this->facets[$fieldName]['label'];
+		}
+		if($defaultValue == null) {
+			$defaultValue = $fieldName;
+		}
+		if($language != null) {
+			$jsonLabel = $this->getFacetExtraInfo($fieldName, "label");
+			if($jsonLabel == null) {
+				return $defaultValue;
+			}
+			$labels = json_decode($jsonLabel);
+			if(isset($labels[$language])) {
+				return $labels[$language];
+			}
+		}
+			return $defaultValue;
+	}
+	
+	public function showFacetValueCounters($fieldName, $defaultValue=true) {
+		return $this->getFacetExtraInfo($fieldName, "showCounter", $defaultValue ? "true" : "false") != "false";
+	}
+	
+	public function showFacetIcon($fieldName, $defaultValue=null) {
+		return $this->getFacetExtraInfo($fieldName, "icon", $defaultValue);
+	}
+	
 	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
 		try {
 			return $this->getFacetResponseDisplay($this->getFacetResponse($fieldName), $defaultDisplay);
@@ -257,7 +285,7 @@ class BxFacets
 		return null;
 	}
 	
-	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
+	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0, $limitSize=true) {
 		if($fieldName == "") {
 			return array();
 		}
@@ -286,6 +314,13 @@ class BxFacets
 			}
 			break;
 		}
+		$overWriteRanking = $this->getFacetExtraInfo($fieldName, "valueorderEnums");
+		if($overWriteRanking == "counter") {
+			$ranking = 'counter';
+		}
+		if($overWriteRanking == "alphabetical") {
+			$ranking = 'alphabetical';
+		}
 		if($ranking == 'counter') {
 			uasort($facetValues, function ($a, $b) {
 				if ($a->hitCount > $b->hitCount) {
@@ -296,6 +331,48 @@ class BxFacets
 				return 0;
 			});
 		}
+		
+		$displaySelectedValues = $this->getFacetExtraInfo($fieldName, "displaySelectedValues");
+		if($displaySelectedValues == "only") {
+			$finalFacetValues = array();
+			foreach($facetValues as $k => $v) {
+				if($v->selected) {
+					$finalFacetValues[$k] = $v;
+				}
+			}
+			$facetValues = $finalFacetValues;
+		}
+		if($displaySelectedValues == "top") {
+			$finalFacetValues = array();
+			foreach($facetValues as $k => $v) {
+				if($v->selected) {
+					$finalFacetValues[$k] = $v;
+				}
+			}
+			foreach($facetValues as $k => $v) {
+				if(!$v->selected) {
+					$finalFacetValues[$k] = $v;
+				}
+			}
+			$facetValues = $finalFacetValues;
+		}
+		
+		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
+		if($limitSize && $enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
+			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
+			if($enumDisplaySizeMin == 0) {
+				$enumDisplaySizeMin = $enumDisplaySize;
+			}
+			$finalFacetValues = array();
+			foreach($facetValues as $k => $v) {
+				$finalFacetValues[$k] = $v;
+				if(sizeof($finalFacetValues) >= $enumDisplaySizeMin) {
+					break;
+				}
+			}
+			$facetValues = $finalFacetValues;
+		}
+		
         return $facetValues;
 	}
 	
@@ -465,13 +542,6 @@ class BxFacets
 		return array_keys($this->getFacetKeysValues($fieldName, $ranking, $minCategoryLevel));
     }
 	
-	public function getFacetLabel($fieldName) {
-		if(isset($this->facets[$fieldName])) {
-			return $this->facets[$fieldName]['label'];
-		}
-		return $fieldName;
-	}
-	
 	protected function getFacetValueArray($fieldName, $facetValue) {
 
 		if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
@@ -482,7 +552,7 @@ class BxFacets
 			return array($valueLabel, $paramValue, null, true);
 		}
 
-        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
+        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel, false);
 
 		if(is_array($facetValue)){
 			$facetValue = reset($facetValue);
