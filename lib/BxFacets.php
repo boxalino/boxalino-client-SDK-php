@@ -68,8 +68,99 @@ class BxFacets
     }
 
     public function getFieldNames() {
-        return array_keys($this->facets);
+		$fieldNames = array();
+		foreach($this->facets as $fieldName => $facet) {
+			$facetResponse = $this->getFacetResponse($fieldName);
+			if(sizeof($facetResponse->values)>0) {
+				$fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=>-sizeof($fieldNames));
+			}
+		}
+		uasort($fieldNames, function ($a, $b) {
+			$aValue = intval($this->getFacetExtraInfo($a['fieldName'], 'order', $a['returnedOrder']));
+			$bValue = intval($this->getFacetExtraInfo($b['fieldName'], 'order', $b['returnedOrder']));
+			if ($aValue > $bValue) {
+				return -1;
+			} elseif ($bValue > $aValue) {
+				return 1;
+			}
+			return 0;
+		});
+        return array_keys($fieldNames);
     }
+	
+	public function getDisplayFacets($display, $default=false) {
+		$selectedFacets = array();
+		foreach($this->getFieldNames() as $fieldName) {
+			if($this->getFacetDisplay($fieldName) == $display || ($this->getFacetDisplay($fieldName) == null && $default)) {
+				$selectedFacets[] = $fieldName;
+			}
+		}
+		return $selectedFacets;
+	}
+	
+	public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false) {
+		$selectedFacets = array();
+		foreach($this->getFieldNames() as $fieldName) {
+			if($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
+				$selectedFacets[] = $fieldName;
+			}
+		}
+		return $selectedFacets;
+	}
+	
+	public function getLeftFacets() {
+		return $this->getFacetExtraInfoFacets('position', 'left', true);
+	}
+	
+	public function getTopFacets() {
+		return $this->getFacetExtraInfoFacets('position', 'top', false);
+	}
+	
+	public function getBottomFacets() {
+		return $this->getFacetExtraInfoFacets('position', 'bottom', false);
+	}
+	
+	public function getRightFacets() {
+		return $this->getFacetExtraInfoFacets('position', 'right', false);
+	}
+	
+	public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
+		if($facetResponse) {
+			if(is_array($facetResponse->extraInfo) && sizeof($facetResponse->extraInfo) > 0 && isset($facetResponse->extraInfo[$extraInfoKey])) {
+				return $facetResponse->extraInfo[$extraInfoKey];
+			}
+			return $defaultExtraInfoValue;
+		}
+		return $defaultExtraInfoValue;
+	}
+	
+	public function getFacetResponseDisplay($facetResponse, $defaultDisplay = 'expanded') {
+		if($facetResponse) {
+			if($facetResponse->display) {
+				return $facetResponse->display;
+			}
+			return $defaultDisplay;
+		}
+		return $defaultDisplay;
+	}
+	
+	public function getFacetExtraInfo($fieldName, $extraInfoKey, $defaultExtraInfoValue = null) {
+		try {
+			return $this->getFacetResponseExtraInfo($this->getFacetResponse($fieldName), $extraInfoKey, $defaultExtraInfoValue);
+		} catch(\Exception $e) {
+			return $defaultExtraInfoValue;
+		}
+		return $defaultExtraInfoValue;
+	}
+	
+	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
+		try {
+			return $this->getFacetResponseDisplay($this->getFacetResponse($fieldName), $defaultDisplay);
+		} catch(\Exception $e) {
+			return $defaultDisplay;
+		}
+		return $defaultDisplay;
+	}
 
     protected function getFacetResponse($fieldName) {
         if($this->facetResponse != null) {

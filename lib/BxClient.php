@@ -14,6 +14,8 @@ class BxClient
 	private $p13n_username;
 	private $p13n_password;
 	private $domain;
+	
+	private $isTest = null;
 
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
@@ -61,6 +63,10 @@ class BxClient
 			$this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
 		}
 		$this->domain = $domain;
+	}
+	
+	public function setTestMode($isTest) {
+		$this->isTest = $isTest;
 	}
 	
 	public function setRequestMap($requestMap) {
@@ -208,6 +214,10 @@ class BxClient
 		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
 		$hostname = @$_SERVER['HTTP_HOST'];
 		$requesturi = @$_SERVER['REQUEST_URI'];
+		
+		if($hostname == "") {
+			return "";
+		}
 
 		return $protocol . '://' . $hostname . $requesturi;
 	}
@@ -284,8 +294,8 @@ class BxClient
 		if(strpos($e->getMessage(), 'Solr returned status 404') !== false) {
 			throw new \Exception("Data not live on account " . $this->getAccount() . ": index returns status 404. Please publish your data first, like in example backend_data_basic.php.");
 		}
-		if(strpos($e->getMessage(), 'undefined field ') !== false) {
-			$parts = explode('undefined field ', $e->getMessage());
+		if(strpos($e->getMessage(), 'undefined field') !== false) {
+			$parts = explode('undefined field', $e->getMessage());
 			$pieces = explode('	at ', $parts[1]);
 			$field = str_replace(':', '', trim($pieces[0]));
 			throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist.");
@@ -366,6 +376,9 @@ class BxClient
 			
 			$choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
 			$choiceInquiry->choiceId = $request->getChoiceId();
+			if($this->isTest === true || ($this->isDev && $this->isTest === null)) {
+				$choiceInquiry->choiceId .= "_debugtest";
+			}
 			$choiceInquiry->simpleSearchQuery = $request->getSimpleSearchQuery($this->getAccount());
 			$choiceInquiry->contextItems = $request->getContextItems();
 			$choiceInquiry->minHitCount = $request->getMin();
