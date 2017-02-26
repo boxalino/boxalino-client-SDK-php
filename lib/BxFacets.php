@@ -177,8 +177,17 @@ class BxFacets
 		return $this->getFacetExtraInfo($fieldName, "showCounter", $defaultValue ? "true" : "false") != "false";
 	}
 	
-	public function showFacetIcon($fieldName, $defaultValue=null) {
+	public function getFacetIcon($fieldName, $defaultValue=null) {
 		return $this->getFacetExtraInfo($fieldName, "icon", $defaultValue);
+	}
+	
+	public function isFacetExpanded($fieldName, $default=true) {
+		$defaultDisplay = $default ? 'expanded' : null;
+		return $this->getFacetDisplay($fieldName, $defaultDisplay) == 'expanded';
+	}
+	
+	public function isFacetHidden($fieldName) {
+		return $this->getFacetDisplay($fieldName) == 'hidden';
 	}
 	
 	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
@@ -285,7 +294,7 @@ class BxFacets
 		return null;
 	}
 	
-	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0, $limitSize=true) {
+	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
 		if($fieldName == "") {
 			return array();
 		}
@@ -358,17 +367,17 @@ class BxFacets
 		}
 		
 		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
-		if($limitSize && $enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
+		if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
 			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
 			if($enumDisplaySizeMin == 0) {
 				$enumDisplaySizeMin = $enumDisplaySize;
 			}
 			$finalFacetValues = array();
 			foreach($facetValues as $k => $v) {
-				$finalFacetValues[$k] = $v;
 				if(sizeof($finalFacetValues) >= $enumDisplaySizeMin) {
-					break;
+					$v->hidden = true;
 				}
+				$finalFacetValues[$k] = $v;
 			}
 			$facetValues = $finalFacetValues;
 		}
@@ -549,10 +558,10 @@ class BxFacets
 			$to = round($this->selectedPriceValues[0]->rangeToExclusive, 2);
 			$valueLabel = $from . ' - ' . $to;
 			$paramValue = "$from-$to";
-			return array($valueLabel, $paramValue, null, true);
+			return array($valueLabel, $paramValue, null, true, false);
 		}
 
-        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel, false);
+        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
 
 		if(is_array($facetValue)){
 			$facetValue = reset($facetValue);
@@ -563,21 +572,22 @@ class BxFacets
 
 		$type = $this->getFacetType($fieldName);
 		$fv = isset($keyValues[$facetValue]) ? $keyValues[$facetValue] : null;
+		$hidden = isset($fv->hidden) ? $fv->hidden : false;
 		switch($type) {
 		case 'hierarchical':
 			$parts = explode("/", $fv->stringValue);
-			return array($parts[sizeof($parts)-1], $parts[0], $fv->hitCount, $fv->selected);
+			return array($parts[sizeof($parts)-1], $parts[0], $fv->hitCount, $fv->selected, $hidden);
 		case 'ranged':
 			$from = round($fv->rangeFromInclusive, 2);
 			$to = round($fv->rangeToExclusive, 2);
 			$valueLabel = $from . ' - ' . $to;
 			$paramValue = $fv->stringValue;
 			$paramValue = "$from-$to";
-			return array($valueLabel, $paramValue, $fv->hitCount, $fv->selected);
+			return array($valueLabel, $paramValue, $fv->hitCount, $fv->selected, $hidden);
 			
 		default:
 			$fv = $keyValues[$facetValue];
-			return array($fv->stringValue, $fv->stringValue, $fv->hitCount, $fv->selected);
+			return array($fv->stringValue, $fv->stringValue, $fv->hitCount, $fv->selected, $hidden);
 		}
 	}
 	
@@ -615,6 +625,11 @@ class BxFacets
     public function getFacetValueCount($fieldName, $facetValue) {
 		list($label, $parameterValue, $hitCount, $selected) = $this->getFacetValueArray($fieldName, $facetValue);
 		return $hitCount;
+    }
+
+    public function isFacetValueHidden($fieldName, $facetValue) {
+		list($label, $parameterValue, $hitCount, $selected, $hidden) = $this->getFacetValueArray($fieldName, $facetValue);
+		return $hidden;
     }
 	
 	public function getCategoryValueId($facetValue) {
