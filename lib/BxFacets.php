@@ -178,8 +178,13 @@ class BxFacets
 				return $this->prettyPrintLabel($defaultValue, $prettyPrint);
 			}
 			$labels = json_decode($jsonLabel);
-			if(isset($labels[$language])) {
-				return $this->prettyPrintLabel($labels[$language], $prettyPrint);
+			foreach($labels as $label) {
+				if($language && $label->language != $language) {
+					continue;
+				}
+				if($label->value != null) {
+					return $this->prettyPrintLabel($label->value, $prettyPrint);
+				}
 			}
 		}
 			return $this->prettyPrintLabel($defaultValue, $prettyPrint);
