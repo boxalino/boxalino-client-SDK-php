@@ -77,7 +77,13 @@ class BxFacets
 		}
 		uasort($fieldNames, function ($a, $b) {
 			$aValue = intval($this->getFacetExtraInfo($a['fieldName'], 'order', $a['returnedOrder']));
+			if($aValue == 0) {
+				$aValue =  $a['returnedOrder'];
+			}
 			$bValue = intval($this->getFacetExtraInfo($b['fieldName'], 'order', $b['returnedOrder']));
+			if($bValue == 0) {
+				$bValue =  $b['returnedOrder'];
+			}
 			if ($aValue > $bValue) {
 				return -1;
 			} elseif ($bValue > $aValue) {
