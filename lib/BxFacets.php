@@ -98,9 +98,12 @@ class BxFacets
 		return $selectedFacets;
 	}
 	
-	public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false) {
+	public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false, $returnHidden=false) {
 		$selectedFacets = array();
 		foreach($this->getFieldNames() as $fieldName) {
+			if(!$returnHidden && $this->isFacetHidden($fieldName)) {
+				continue;
+			}
 			if($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
 				$selectedFacets[] = $fieldName;
 			}
@@ -108,20 +111,20 @@ class BxFacets
 		return $selectedFacets;
 	}
 	
-	public function getLeftFacets() {
-		return $this->getFacetExtraInfoFacets('position', 'left', true);
+	public function getLeftFacets($returnHidden=false) {
+		return $this->getFacetExtraInfoFacets('position', 'left', true, $returnHidden);
 	}
 	
-	public function getTopFacets() {
-		return $this->getFacetExtraInfoFacets('position', 'top', false);
+	public function getTopFacets($returnHidden=false) {
+		return $this->getFacetExtraInfoFacets('position', 'top', false, $returnHidden);
 	}
 	
-	public function getBottomFacets() {
-		return $this->getFacetExtraInfoFacets('position', 'bottom', false);
+	public function getBottomFacets($returnHidden=false) {
+		return $this->getFacetExtraInfoFacets('position', 'bottom', false, $returnHidden);
 	}
 	
-	public function getRightFacets() {
-		return $this->getFacetExtraInfoFacets('position', 'right', false);
+	public function getRightFacets($returnHidden=false) {
+		return $this->getFacetExtraInfoFacets('position', 'right', false, $returnHidden);
 	}
 	
 	public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
@@ -153,7 +156,16 @@ class BxFacets
 		return $defaultExtraInfoValue;
 	}
 	
-	public function getFacetLabel($fieldName, $language=null, $defaultValue=null) {
+	public function prettyPrintLabel($label, $prettyPrint=false) {
+		if($prettyPrint) {
+			$label = str_replace('_', ' ', $label);
+			$label = str_replace('products', '', $label);
+			$label = ucfirst(trim($label));
+		}
+		return $label;
+	}
+	
+	public function getFacetLabel($fieldName, $language=null, $defaultValue=null, $prettyPrint=false) {
 		if(isset($this->facets[$fieldName])) {
 			$defaultValue = $this->facets[$fieldName]['label'];
 		}
@@ -163,14 +175,14 @@ class BxFacets
 		if($language != null) {
 			$jsonLabel = $this->getFacetExtraInfo($fieldName, "label");
 			if($jsonLabel == null) {
-				return $defaultValue;
+				return $this->prettyPrintLabel($defaultValue, $prettyPrint);
 			}
 			$labels = json_decode($jsonLabel);
 			if(isset($labels[$language])) {
-				return $labels[$language];
+				return $this->prettyPrintLabel($labels[$language], $prettyPrint);
 			}
 		}
-			return $defaultValue;
+			return $this->prettyPrintLabel($defaultValue, $prettyPrint);
 	}
 	
 	public function showFacetValueCounters($fieldName, $defaultValue=true) {
@@ -206,8 +218,9 @@ class BxFacets
 					return $facetResponse;
 				}
 			}
+			throw new \Exception("trying to get facet response on unexisting fieldname " . $fieldName);
 		}
-        throw new \Exception("trying to get facet response on unexisting fieldname " . $fieldName);
+        throw new \Exception("trying to get facet response but not facet response set");
     }
 	
 	protected function getFacetType($fieldName) {
@@ -366,7 +379,7 @@ class BxFacets
 			$facetValues = $finalFacetValues;
 		}
 		
-		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
+		$enumDisplaySize = 5; //intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
 		if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
 			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
 			if($enumDisplaySizeMin == 0) {
