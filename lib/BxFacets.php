@@ -244,10 +244,28 @@ class BxFacets
 	
 	protected function buildTree($response, $parents = array(), $parentLevel = 0) {
 		if(sizeof($parents)==0) {
+			$parents = array();
 			foreach($response as $node) {
 				if(sizeof($node->hierarchy) == 1) {
-					$parents = $node->hierarchy;
+					$parents[] = $node;
 				}
+			}
+			if(sizeof($parents) == 1) {
+				$parents = $parents[0]->hierarchy;
+			} else if(sizeof($parents) > 1) {
+				$children = array();
+				$hitCountSum = 0;
+				foreach($parents as $parent) {
+					$children[] = $this->buildTree($response, $parent->hierarchy,  $parentLevel);
+					$hitCountSum += $children[sizeof($children)-1]['node']->hitCount;
+				}
+				$root = array();
+				$root['stringValue'] = '0/Root';
+				$root['hitCount'] = $hitCountSum;
+				$root['hierarchyId'] = 0;
+				$root['hierarchy'] = array();
+				$root['selected'] = false;
+				return array('node'=>(object)$root, 'children'=>$children);
 			}
 		}
 		$children = array();
@@ -268,7 +286,7 @@ class BxFacets
 			if(sizeof($node->hierarchy) == $parentLevel + 1) {
 				$allTrue = true;
 				foreach($node->hierarchy as $k => $v) {
-					if($parents[$k] != $v) {
+					if(!isset($parents[$k]) || $parents[$k] != $v) {
 						$allTrue = false;
 					}
 				}
@@ -298,15 +316,39 @@ class BxFacets
 		return $this->getFirstNodeWithSeveralChildren($bestTree, $minCategoryLevel-1);
 	}
 	
+	public function getFacetSelectedValues($fieldName) {
+		$selectedValues = array();
+		foreach($this->getFacetKeysValues($fieldName) as $val) {
+			if(isset($val->selected) && $val->selected && isset($val->stringValue)) {
+				$selectedValues[] = (string) $val->stringValue;
+			}
+		}
+		return $selectedValues;
+	}
+	
 	public function getSelectedTreeNode($tree) {
-		if(!isset($this->facets['category_id'])){
+		$selectedCategoryId = null;
+		if(isset($this->facets['category_id'])){
+			$selectedCategoryId = $this->facets['category_id']['selectedValues'][0];
+		}
+		if($selectedCategoryId == null) {
+			try {
+				$values = $this->getFacetSelectedValues('category_id');
+				if(sizeof($values) > 0) {
+					$selectedCategoryId = $values[0];
+				}
+			} catch(\Exception $e) {
+				
+			}
+		}
+		if($selectedCategoryId == null) {
 			return $tree;
 		}
 		if(!$tree['node']){
 			return null;
 		}
 		$parts = explode('/', $tree['node']->stringValue);
-		if($parts[0] == $this->facets['category_id']['selectedValues'][0]) {
+		if($parts[0] == $selectedCategoryId) {
 			return $tree;
 		}
 		foreach($tree['children'] as $node) {
@@ -487,7 +529,9 @@ class BxFacets
 		$parent = $treeEnd;
 		while($parent) {
 			$parts = explode('/', $parent['node']->stringValue);
-			$parents[] = array($parts[0], $parts[sizeof($parts)-1]);
+			if($parts[0] != 0) {
+				$parents[] = array($parts[0], $parts[sizeof($parts)-1]);
+			}
 			$parent = $this->getTreeParent($tree, $parent);
 		}
 		krsort($parents);
