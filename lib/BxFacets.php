@@ -56,7 +56,7 @@ class BxFacets
 	}
 	
 	protected function isCategories($fieldName) {
-		return strpos($fieldName, 'categories') !== false ;
+		return strpos($fieldName, $this->getCategoryFieldName()) !== false ;
 	}
 
     public function getFacetParameterName($fieldName) {
@@ -360,6 +360,16 @@ class BxFacets
 		return null;
 	}
 	
+	public function getCategoryById($categoryId) {
+		$facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
+		foreach ($facetResponse->values as $bxFacet) {
+			if($bxFacet->hierarchyId == $categoryId) {
+				return $categoryId; 
+			}
+		}
+		return null;
+	}
+	
 	protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
 		if($fieldName == "") {
 			return array();
@@ -515,7 +525,7 @@ class BxFacets
 	}
 	
 	public function getParentCategories() {
-		$fieldName = 'categories';
+		$fieldName = $this->getCategoryFieldName();
 		$facetResponse = $this->getFacetResponse($fieldName);
 		$tree = $this->buildTree($facetResponse->values);
 		$treeEnd = $this->getSelectedTreeNode($tree);
@@ -542,7 +552,7 @@ class BxFacets
 		return $final;
 	}
 	public function getParentCategoriesHitCount($id){
-		$fieldName = 'categories';
+		$fieldName = $this->getCategoryFieldName();
 		$facetResponse = $this->getFacetResponse($fieldName);
 		$tree = $this->buildTree($facetResponse->values);
 		$treeEnd = $this->getSelectedTreeNode($tree);
@@ -633,6 +643,14 @@ class BxFacets
 
 		if(is_array($facetValue)){
 			$facetValue = reset($facetValue);
+		}
+		if(!isset($keyValues[$facetValue]) && $fieldName == $this->getCategoryFieldName()) {
+			$facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
+			foreach ($facetResponse->values as $bxFacet) {
+				if($bxFacet->hierarchyId == $facetValue) {
+					$keyValues[$facetValue] = $bxFacet;
+				}
+			}
 		}
 		if(!isset($keyValues[$facetValue])) {
 			throw new \Exception("Requesting an invalid facet values for fieldname: " . $fieldName . ", requested value: " . $facetValue . ", available values . " . implode(',', array_keys($keyValues)));
