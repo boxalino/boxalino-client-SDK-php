@@ -5,7 +5,7 @@ namespace com\boxalino\bxclient\v1;
 class BxFacets
 {
 	public $facets = array();
-	protected $facetResponse = null;
+	protected $searchResult = null;
 
 	protected $selectedPriceValues = null;
 
@@ -13,8 +13,8 @@ class BxFacets
 	
 	protected $priceFieldName = 'discountedPrice';
 	
-	public function setFacetResponse($facetResponse) {
-		$this->facetResponse = $facetResponse;
+	public function setSearchResults($searchResult) {
+		$this->searchResult = $searchResult;
 	}
 	
 	public function getCategoryFieldName() {
@@ -209,8 +209,33 @@ class BxFacets
 		return $this->getFacetDisplay($fieldName, $defaultDisplay) == 'expanded';
 	}
 	
-	public function isFacetHidden($fieldName) {
-		return $this->getFacetDisplay($fieldName) == 'hidden';
+	public function getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold = 0) {
+		//todo
+		return $defaultHideCoverageThreshold;
+	}
+	
+	public function getTotalHitCount() {
+		return $this->searchResult->totalHitCount;
+	}
+	
+	public function getFacetCoverage($fieldName) {
+		$coverage = 0;
+		foreach($this->getFacetValues($fieldName) as $facetValue) {
+			$coverage += $this->getFacetValueCount($fieldName, $facetValue);
+		}
+		return $coverage;
+	}
+	
+	public function isFacetHidden($fieldName, $defaultHideCoverageThreshold = 0) {
+		if($this->getFacetDisplay($fieldName) == 'hidden') {
+			return true;
+		}
+		if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
+			$hideCoverageThreshold = $this->getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold);
+			$ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
+			return $ratio < $defaultHideCoverageThreshold;
+		}
+		return false;
 	}
 	
 	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
@@ -223,8 +248,8 @@ class BxFacets
 	}
 
     protected function getFacetResponse($fieldName) {
-        if($this->facetResponse != null) {
-			foreach($this->facetResponse as $facetResponse) {
+        if($this->searchResult != null && $this->searchResult->facetResponses != null) {
+			foreach($this->searchResult->facetResponses as $facetResponse) {
 				if($facetResponse->fieldName == $fieldName) {
 					return $facetResponse;
 				}
@@ -795,7 +820,7 @@ class BxFacets
 	public function getParentId($fieldName, $id){
 		$hierarchy = array();
 
-		foreach ($this->facetResponse as $response) {
+		foreach ($this->searchResult->facetResponses as $response) {
 			if($response->fieldName == $fieldName){
 				foreach($response->values as $item){
 					if($item->hierarchyId == $id){
