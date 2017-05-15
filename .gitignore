@@ -1,2 +1,4 @@
 /phpunit/phpunit-5.6.1.phar
 /phpunit/phpunit.cmd
+/vendor
+composer.lock
