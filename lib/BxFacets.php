@@ -152,6 +152,9 @@ class BxFacets
 	}
 	
 	public function getFacetExtraInfo($fieldName, $extraInfoKey, $defaultExtraInfoValue = null) {
+		if ($fieldName == $this->getCategoryFieldName()) {
+			$fieldName = 'category_id';
+		}
 		try {
 			return $this->getFacetResponseExtraInfo($this->getFacetResponse($fieldName), $extraInfoKey, $defaultExtraInfoValue);
 		} catch(\Exception $e) {
@@ -203,6 +206,7 @@ class BxFacets
 	}
 	
 	public function isFacetExpanded($fieldName, $default=true) {
+	    $fieldName = $fieldName == $this->getCategoryFieldName() ? 'category_id' : $fieldName;
 		$defaultDisplay = $default ? 'expanded' : null;
 		return $this->getFacetDisplay($fieldName, $defaultDisplay) == 'expanded';
 	}
@@ -465,9 +469,9 @@ class BxFacets
 			$facetValues = $finalFacetValues;
 		}
 
-		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
+		$enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplayMaxSize"));
 		if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
-			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySizeMin"));
+			$enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
 			if($enumDisplaySizeMin == 0) {
 				$enumDisplaySizeMin = $enumDisplaySize;
 			}
