@@ -105,13 +105,17 @@ class BxFacets
 	public function getFacetExtraInfoFacets($extraInfoKey, $extraInfoValue, $default=false, $returnHidden=false) {
 		$selectedFacets = array();
 		foreach($this->getFieldNames() as $fieldName) {
-			if(!$returnHidden && $this->isFacetHidden($fieldName)) {
-				continue;
-			}
-			if($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
-				$selectedFacets[] = $fieldName;
-			}
-		}
+            if (!$returnHidden && $this->isFacetHidden($fieldName)) {
+                continue;
+            }
+            $facetValues = $this->getFacetValues($fieldName);
+            if ($this->getFacetType($fieldName) != 'ranged' && ($this->getTotalHitCount() > 0 && sizeof($facetValues) == 1) && (floatval($this->getFacetExtraInfo($fieldName, "limitOneValueCoverage")) >= floatval($this->getFacetValueCount($fieldName, $facetValues[0]) / $this->getTotalHitCount()))) {
+                continue;
+            }
+            if ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
+                $selectedFacets[] = $fieldName;
+            }
+        }
 		return $selectedFacets;
 	}
 	
@@ -235,13 +239,16 @@ class BxFacets
 		$defaultHideCoverageThreshold = $this->getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold);
 		if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
 			$ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
-			return $ratio < $defaultHideCoverageThreshold;
+			return floatval($ratio) < floatval($defaultHideCoverageThreshold);
 		}
 		return false;
 	}
 	
 	public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
 		try {
+		    if(sizeof($this->getFacetSelectedValues($fieldName)) > 0) {
+		        return 'expanded';
+            }
 			return $this->getFacetResponseDisplay($this->getFacetResponse($fieldName), $defaultDisplay);
 		} catch(\Exception $e) {
 			return $defaultDisplay;
