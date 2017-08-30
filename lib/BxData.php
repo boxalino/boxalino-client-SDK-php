@@ -36,17 +36,22 @@ class BxData
 	public function getLanguages() {
 		return $this->languages;
 	}
-	
+	public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
+        $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
+        $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
+        $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
+        return $sourceKey;
+    }
 	public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true) {
 		$sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
-		$this->addSourceIdField($sourceKey, $itemIdColumn, null, $validate) ;
+		$this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
 		$this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
 		return $sourceKey;
 	}
 	
 	public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true) {
 		$sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
-		$this->addSourceIdField($sourceKey, $itemIdColumn, null, $validate) ;
+		$this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
 		$this->addSourceStringField($sourceKey, "bx_customer_id", $itemIdColumn, null, $validate) ;
 		return $sourceKey;
 	}
@@ -58,7 +63,14 @@ class BxData
 		}
 		return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'CSV', $params, $validate);
 	}
-	
+
+	public function addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding = 'UTF-8', $sourceId = null, $container = 'products', $validate=true){
+        $params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'baseXPath'=>$xPath);
+        if($sourceId == null) {
+            $sourceId = $this->getFileNameFromPath($filePath, true);
+        }
+        return $this->addSourceFile($filePath, $sourceId, $container, 'item_data_file', 'XML', $params, $validate);
+    }
 	public function addCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'customers', $validate=true) {
 		$params = array('itemIdColumn'=>$itemIdColumn, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 		if($sourceId == null) {
@@ -162,8 +174,9 @@ class BxData
 		}
 	}
 	
-	public function addSourceIdField($sourceKey, $col, $referenceSourceKey=null, $validate=true) {
-		$this->addSourceField($sourceKey, 'bx_id', "id", false, $col, $referenceSourceKey, $validate);
+	public function addSourceIdField($sourceKey, $col, $format, $referenceSourceKey=null, $validate=true) {
+	    $id_field = $format == 'CSV' ? 'bx_id' : 'id';
+		$this->addSourceField($sourceKey, $id_field, "id", false, $col, $referenceSourceKey, $validate);
 	}
 	
 	public function addSourceTitleField($sourceKey, $colMap, $referenceSourceKey=null, $validate=true) {
@@ -326,17 +339,24 @@ class BxData
 					$source->addAttribute('additional_item_source', $sourceValues['additional_item_source']);
 				}
 				$sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
-				
-				$parameters = array(
-								'file'=>false,
-								'format'=>'CSV', 
-								'encoding'=>'UTF-8', 
-								'delimiter'=>',', 
-								'enclosure'=>'"', 
-								'escape'=>'\\\\', 
-								'lineSeparator'=>"\\n"
-							);
-				
+				if($sourceValues['format'] == 'CSV') {
+                    $parameters = array(
+                        'file'=>false,
+                        'format'=>'CSV',
+                        'encoding'=>'UTF-8',
+                        'delimiter'=>',',
+                        'enclosure'=>'"',
+                        'escape'=>'\\\\',
+                        'lineSeparator'=>"\\n"
+                    );
+                } else if($sourceValues['format'] == 'XML') {
+                    $parameters = array(
+                        'file'=>false,
+                        'format'=> $sourceValues['format'],
+                        'encoding'=>$sourceValues['encoding'],
+                        'baseXPath'=>$sourceValues['baseXPath']
+                    );
+                }
 				switch($sourceValues['type']) {
 				case 'item_data_file':
 					$parameters['itemIdColumn'] = false;
@@ -420,7 +440,7 @@ class BxData
 						$logic = $transform->addChild('logic');	
 						$logic->addAttribute('source', $sourceId);
 						$referenceSourceKey = isset($fieldValues['referenceSourceKey']) ? $fieldValues['referenceSourceKey'] : null;
-						$logicType = $referenceSourceKey == null ? 'direct' : 'reference';
+						$logicType = (($sourceValues['format'] == 'XML') ? "xpath" : ($referenceSourceKey == null ? 'direct' : 'reference'));
 						if($logicType == 'direct') {
 							if(isset($fieldValues['fieldParameters'])) {
 								foreach ($fieldValues['fieldParameters'] as $parameterName => $parameterValue) {
