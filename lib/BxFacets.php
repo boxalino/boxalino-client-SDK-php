@@ -70,6 +70,13 @@ class BxFacets
 
     public function getFieldNames() {
 		$fieldNames = array();
+        if(sizeof($this->facets) !== sizeof($this->searchResult->facetResponses)) {
+            foreach($this->searchResult->facetResponses as $facetResponse) {
+                if(!isset($this->facets[$facetResponse->fieldName])) {
+                    $this->facets[$facetResponse->fieldName] = ['label' => $facetResponse->fieldName];
+                }
+            }
+        }
 		foreach($this->facets as $fieldName => $facet) {
 			$facetResponse = $this->getFacetResponse($fieldName);
 			if(sizeof($facetResponse->values)>0) {
