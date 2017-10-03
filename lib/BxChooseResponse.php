@@ -150,10 +150,13 @@ class BxChooseResponse
         $searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases);
         $facets = $this->getRequestFacets($choice);
 
-        if(empty($facets) || $searchResult == null){
-            return new \com\boxalino\bxclient\v1\BxFacets();;
+        if(empty($facets)){
+            $facets = new \com\boxalino\bxclient\v1\BxFacets();
+
         }
-        $facets->setSearchResults($searchResult);
+        if(!is_null($searchResult)){
+            $facets->setSearchResults($searchResult);
+        }
         return $facets;
     }
 
