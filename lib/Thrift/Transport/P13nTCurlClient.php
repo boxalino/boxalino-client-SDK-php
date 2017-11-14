@@ -19,7 +19,7 @@ class P13nTCurlClient extends TCurlClient {
     public function flush() {
         // God, PHP really has some esoteric ways of doing simple things.
         if (!self::$curlHandle) {
-            register_shutdown_function(array('Thrift\\Transport\\TCurlClient', 'closeCurlHandle'));
+            //register_shutdown_function(array('Thrift\\Transport\\TCurlClient', 'closeCurlHandle'));
             self::$curlHandle = curl_init();
             curl_setopt(self::$curlHandle, CURLOPT_RETURNTRANSFER, true);
             curl_setopt(self::$curlHandle, CURLOPT_BINARYTRANSFER, true);
