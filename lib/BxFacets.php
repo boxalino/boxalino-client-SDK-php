@@ -152,9 +152,6 @@ class BxFacets
                 continue;
             }
             if ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
-                if(!$withSoftFacets && $this->getFacetExtraInfo($fieldName, 'isSoftFacet') == 'true'){
-                    continue;
-                }
                 $selectedFacets[] = $fieldName;
             }
         }
