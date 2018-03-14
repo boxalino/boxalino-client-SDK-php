@@ -397,7 +397,6 @@ class BxClient
             }
             return $bundleChoiceResponse;
         } catch(\Exception $e) {
-            var_dump($e->getMessage());exit;
             $this->throwCorrectP13nException($e);
         }
     }
