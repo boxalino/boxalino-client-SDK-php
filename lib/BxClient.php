@@ -366,7 +366,7 @@ class BxClient
 	private function p13nchoose($choiceRequest) {
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
-            if($_REQUEST['dev_bx_debug'] == 'true'){
+            if(isset($_REQUEST['dev_bx_debug']) && $_REQUEST['dev_bx_debug'] == 'true'){
                 $this->addNotification('bxRequest', $choiceRequest);
                 $this->addNotification('bxResponse', $choiceResponse);
             }

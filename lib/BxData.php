@@ -16,6 +16,7 @@ class BxData
     private $isDev;
     private $isDelta;
 
+    private $delimiter = ',';
     private $sources = array();
 
     private $host = 'http://di1.bx-cloud.com';
@@ -36,6 +37,11 @@ class BxData
     public function getLanguages() {
         return $this->languages;
     }
+
+    public function setDelimiter($delimiter) {
+        $this->delimiter = $delimiter;
+    }
+
     public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
         $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
@@ -143,7 +149,7 @@ class BxData
             if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
                 $count = 1;
                 $this->sources[$container][$sourceId]['rows'] = array();
-                while (($data = fgetcsv($handle, 2000, ",")) !== FALSE) {
+                while (($data = fgetcsv($handle, 2000, $this->delimiter)) !== FALSE) {
                     $this->sources[$container][$sourceId]['rows'][] = $data;
                     if($count++>=$maxRow) {
                         break;
@@ -344,7 +350,7 @@ class BxData
                         'file'=>false,
                         'format'=>'CSV',
                         'encoding'=>'UTF-8',
-                        'delimiter'=>',',
+                        'delimiter'=> $this->delimiter,
                         'enclosure'=>'"',
                         'escape'=>'\\\\',
                         'lineSeparator'=>"\\n"
