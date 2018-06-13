@@ -22,7 +22,9 @@ $host = isset($host) ? $host : "cdn.bx-cloud.com";
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
 $bxClient = new BxClient($account, $password, $domain, $isDev, $host);
-
+if(isset($timeout)) {
+    $bxClient->setCurlTimeout($timeout);
+}
 try {
 	$language = "en"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
 	$choiceId = "similar"; //the recommendation choice id (standard choice ids are: "similar" => similar products on product detail page, "complementary" => complementary products on product detail page, "basket" => cross-selling recommendations on basket page, "search"=>search results, "home" => home page personalized suggestions, "category" => category page suggestions, "navigation" => navigation product listing pages suggestions)

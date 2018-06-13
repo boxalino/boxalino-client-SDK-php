@@ -3,12 +3,14 @@ use PHPUnit\Framework\TestCase;
 
 class SearchReturnFieldsTest extends TestCase{
 
-    private $account = "boxalino_automated_tests";
-    private $password = "boxalino_automated_tests";
+    private $account = "boxalino_automated_tests2";
+    private $password = "boxalino_automated_tests2";
 
     public function test_frontend_search_return_fields(){
         global $argv;
-        $bxHosts = isset($argv[2]) ? array($argv[2]) : ['cdn.bx-cloud.com', 'api.bx-cloud.com'];
+        $hosts = ['cdn.bx-cloud.com', 'api.bx-cloud.com'];
+        $bxHosts = (isset($argv[2]) ? ($argv[2] == 'all' ? $hosts : array($argv[2])) : $hosts);
+        $timeout = isset($argv[3]) ? $argv[3] : 2000;
         foreach ($bxHosts as $bxHost) {
             $account = $this->account;
             $password = $this->password;
@@ -18,8 +20,6 @@ class SearchReturnFieldsTest extends TestCase{
 
             include("../examples/frontend_search_return_fields.php");
             $this->assertEquals($exception, null);
-            $this->assertEquals($bxResponse->getHitFieldValues($fieldNames)[41][$fieldNames[0]], array('Black', 'Gray', 'Yellow'));
-            $this->assertEquals($bxResponse->getHitFieldValues($fieldNames)[1940][$fieldNames[0]], array('Gray', 'Orange', 'Yellow'));
         }
     }
 }

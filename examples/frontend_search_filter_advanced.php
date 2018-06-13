@@ -25,7 +25,9 @@ $host = isset($host) ? $host : "cdn.bx-cloud.com";
 //Create the Boxalino Client SDK instance
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
 $bxClient = new BxClient($account, $password, $domain, $isDev, $host);
-
+if(isset($timeout)) {
+    $bxClient->setCurlTimeout($timeout);
+}
 try {
 	$language = "en"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
 	$queryText = "women"; // a search query

@@ -23,7 +23,9 @@ $host = isset($host) ? $host : "cdn.bx-cloud.com";
 //N.B.: you should not create several instances of BxClient on the same page, make sure to save it in a static variable and to re-use it.
 $bxClient = new BxClient($account, $password, $domain, $isDev, $host);
 $bxClient->setRequestMap($_REQUEST);
-
+if(isset($timeout)) {
+    $bxClient->setCurlTimeout($timeout);
+}
 function getItemFieldsCB($ids, $fieldNames) {
 	//todo your code here to retrieve the fields values
 	$values = array();

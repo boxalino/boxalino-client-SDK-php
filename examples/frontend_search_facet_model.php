@@ -93,7 +93,9 @@ $host = isset($host) ? $host : "cdn.bx-cloud.com";
 $bxClient = new BxClient($account, $password, $domain, $isDev, $host);
 
 $bxClient->setTestMode(true);
-
+if(isset($timeout)) {
+    $bxClient->setCurlTimeout($timeout);
+}
 try {
 	$language = "de"; // a valid language code (e.g.: "en", "fr", "de", "it", ...)
 	$queryText = ""; // a search query
