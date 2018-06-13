@@ -376,12 +376,24 @@ class BxClient
                 $this->addNotification('bxResponse', $choiceResponse);
             }
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
-				echo "<pre><h1>Choice Request</h1>";
-				var_dump($choiceRequest);
-				echo "<br><h1>Choice Response</h1>";
-				var_dump($choiceResponse);
-				echo "</pre>";
-				exit;
+                $debug = true;
+                if (isset($this->requestMap['dev_bx_choice'])) {
+                    $debug = false;
+                    foreach ($choiceRequest->inquiries as $inquiry) {
+                        if ($inquiry->choiceId == $this->requestMap['dev_bx_choice']) {
+                            $debug = true;
+                            break;
+                        }
+                    }
+                }
+                if ($debug) {
+                    echo "<pre><h1>Choice Request</h1>";
+                    var_dump($choiceRequest);
+                    echo "<br><h1>Choice Response</h1>";
+                    var_dump($choiceResponse);
+                    echo "</pre>";
+                    exit;
+                }
 			}
 			return $choiceResponse;
 		} catch(\Exception $e) {
