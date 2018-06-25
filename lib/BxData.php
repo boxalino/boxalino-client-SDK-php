@@ -163,8 +163,16 @@ class BxData
         }
         return null;
     }
+	
+	private $globalValidate = true;
+	public function setGlobalValidate($globalValidate) {
+		$this->globalValidate = $globalValidate;
+	}
 
     public function validateSource($container, $sourceId) {
+		if(!$this->globalValidate) {
+			return;
+		}
         $source = $this->sources[$container][$sourceId];
         if($source['format'] == 'CSV') {
             if(isset($source['itemIdColumn'])) {
@@ -312,6 +320,26 @@ class BxData
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         $this->ftpSources[$sourceId] = $params;
     }
+	
+    private $httpSources = array();
+    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0') {
+
+        if($user===null){
+            $user = $this->bxClient->getAccount(false);
+        }
+
+        if($password===null){
+            $password = $this->bxClient->getPassword();
+        }
+
+        $params = array();
+        $params['WebDirectory'] = $webDirectory;
+        $params['User'] = $user;
+        $params['Pass'] = $password;
+        $params['Header'] = $header;
+        list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+        $this->httpSources[$sourceId] = $params;
+    }
 
     public function getXML() {
 
@@ -432,6 +460,17 @@ class BxData
 
                     foreach($this->ftpSources[$sourceId] as $ftpPn => $ftpPv) {
                         $ftp->$ftpPn = $ftpPv;
+                    }
+                }
+
+                if(isset($this->httpSources[$sourceId])) {
+                    $param = $source->addChild('location');
+                    $param->addAttribute('type', 'http');
+
+                    $http = $source->addChild('http');
+
+                    foreach($this->httpSources[$sourceId] as $httpPn => $httpPv) {
+                        $http->$httpPn = $httpPv;
                     }
                 }
 
@@ -648,6 +687,9 @@ class BxData
         foreach($this->sources as $container => $containerSources) {
             foreach($containerSources as $sourceId => $sourceValues) {
                 if(isset($this->ftpSources[$sourceId])) {
+                    continue;
+                }
+                if(isset($this->httpSources[$sourceId])) {
                     continue;
                 }
                 if(!isset($sourceValues['file'])) {
