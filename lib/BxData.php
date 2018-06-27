@@ -182,6 +182,9 @@ class BxData
     }
 
     public function validateColumnExistance($container, $sourceId, $col) {
+		if(!$this->globalValidate) {
+			return;
+		}
         $row = $this->getSourceCSVRow($container, $sourceId, 0);
         if($row !== null && !in_array($col, $row)) {
             throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
