@@ -21,11 +21,11 @@ class P13nTCurlClient extends TCurlClient {
         parent::__construct($host, $port, $uri, $scheme);
     }
 
-  /**
-   * Opens and sends the actual request over the HTTP connection
-   *
-   * @throws TTransportException if a writing error occurs
-   */
+    /**
+     * Opens and sends the actual request over the HTTP connection
+     *
+     * @throws TTransportException if a writing error occurs
+     */
     public function flush() {
         // God, PHP really has some esoteric ways of doing simple things.
         if (!self::$curlHandle) {
@@ -38,6 +38,7 @@ class P13nTCurlClient extends TCurlClient {
 			curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
             // FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set
             @curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
+            @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
         }
