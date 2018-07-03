@@ -20,7 +20,7 @@ class BxClient
 	private $isTest = null;
 
 	private $debugOutput = '';
-	private $debugOutputActive = true;
+	private $debugOutputActive = false;
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
 
@@ -424,7 +424,7 @@ class BxClient
 	                ini_set('xdebug.var_display_max_data', -1);
 	                ini_set('xdebug.var_display_max_depth', -1);
 					$this->debugOutput = "<pre><h1>Choice Request</h1>" . var_export($choiceRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
-					if(!$debugOutputActive) {
+					if(!$this->debugOutputActive) {
 	                    echo $this->debugOutput;
 	                    exit;
 	                }
@@ -448,7 +448,7 @@ class BxClient
                 ini_set('xdebug.var_display_max_data', -1);
                 ini_set('xdebug.var_display_max_depth', -1);
 				$this->debugOutput = "<pre><h1>Bundle Choice Request</h1>" . var_export($choiceRequestBundle, true) . "<br><h1>Bundle Choice Response</h1>" . var_export($bundleChoiceResponse, true) . "</pre>";
-				if(!$debugOutputActive) {
+				if(!$this->debugOutputActive) {
 					echo $this->debugOutput;
 					exit;
 				}
@@ -643,7 +643,7 @@ class BxClient
                 ini_set('xdebug.var_display_max_data', -1);
                 ini_set('xdebug.var_display_max_depth', -1);
 				$this->debugOutput = "<pre><h1>Autocomplete Request</h1>" . var_export($autocompleteRequest, true) . "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
-				if(!$debugOutputActive) {
+				if(!$this->debugOutputActive) {
 					echo $this->debugOutput;
 					exit;
 				}
@@ -691,7 +691,7 @@ class BxClient
 				ini_set('xdebug.var_display_max_data', -1);
 				ini_set('xdebug.var_display_max_depth', -1);
 				$this->debugOutput = "<pre><h1>Request bundle</h1>" . var_export($requestBundle, true) .  "<br><h1>Choice Response</h1>" . var_export($choiceResponse, true) . "</pre>";
-				if(!$debugOutputActive) {
+				if(!$this->debugOutputActive) {
 					echo $this->debugOutput;
 					exit;
 				}
@@ -747,7 +747,7 @@ class BxClient
     {
         if ($force || (isset($this->requestMap[$requestMapKey]) && $this->requestMap[$requestMapKey] == 'true')) {
             $value = "<pre><h1>Notifications</h1>" .  var_export($this->notifications, true) . "</pre>";
-			if(!$debugOutputActive) {
+			if(!$this->debugOutputActive) {
 				echo $value;
 				exit;
 			}
