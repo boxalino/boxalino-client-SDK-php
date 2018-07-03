@@ -77,7 +77,13 @@ class BxClient
 		}
 		$this->domain = $domain;
 		$this->apiKey = $apiKey;
+		if (empty($apiKey)) {
+			$this->apiKey = null;
+		}
 		$this->apiSecret = $apiSecret;
+		if (empty($apiSecret)) {
+			$this->apiSecret = null;
+		}
 	}
 
 	public function setHost($host) {
@@ -161,12 +167,12 @@ class BxClient
 	}
 
 	public function getApiKey() {
-	    return $this->apiKey;
-  }
+		return $this->apiKey;
+	}
 
 	public function getApiSecret() {
-	    return $this->apiSecret;
-  }
+		return $this->apiSecret;
+	}
 
 	public function setSessionAndProfile($sessionId, $profileId) {
 		$this->sessionId = $sessionId;
@@ -618,6 +624,9 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
 				echo "<pre><h1>Autocomplete Request</h1>";
 				var_dump($autocompleteRequest);
 				echo "<br><h1>Choice Response</h1>";
@@ -660,6 +669,9 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
 				echo "<pre><h1>Request bundle</h1>";
 				var_dump($requestBundle);
 				echo "<br><h1>Choice Response</h1>";
