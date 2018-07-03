@@ -8,18 +8,21 @@ class BxClient
 	private $password;
 	private $isDev;
 	private $host;
+	private $apiKey;
+	private $apiSecret;
 	private $port;
 	private $uri;
 	private $schema;
 	private $p13n_username;
 	private $p13n_password;
 	private $domain;
-	
+
 	private $isTest = null;
 
+	private $debugOutput = '';
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
-	
+
 	private $chooseRequests = array();
 	private $chooseResponses = null;
 
@@ -28,22 +31,22 @@ class BxClient
 	const VISITOR_COOKIE_TIME = 31536000;
 
 	private $_timeout = 2;
-    private $curl_timeout = 2000;
+	private $curl_timeout = 2000;
 	private $requestContextParameters = array();
-	
+
 	private $sessionId = null;
 	private $profileId = null;
-	
+
 	private $requestMap = array();
-	
+
 	private $socketHost = null;
 	private $socketPort = null;
 	private $socketSendTimeout = null;
 	private $socketRecvTimeout = null;
 
-    private $notifications = array();
+	private $notifications = array();
 
-	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
+	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request=null, $apiKey=null, $apiSecret=null) {
 		$this->account = $account;
 		$this->password = $password;
 		$this->requestMap = $_REQUEST;
@@ -73,23 +76,33 @@ class BxClient
 			$this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
 		}
 		$this->domain = $domain;
+		$this->apiKey = $apiKey;
+		$this->apiSecret = $apiSecret;
 	}
 
 	public function setHost($host) {
 	    $this->host = $host;
     }
 
+	public function setApiKey($apiKey) {
+	    $this->apiKey = $apiKey;
+  }
+
+	public function setApiSecret($apiSecret) {
+	    $this->apiSecret = $apiSecret;
+  }
+
 	public function setTestMode($isTest) {
 		$this->isTest = $isTest;
 	}
-	
+
 	public function setSocket($socketHost, $socketPort=4040, $socketSendTimeout=1000, $socketRecvTimeout=1000) {
 		$this->socketHost = $socketHost;
 		$this->socketPort = $socketPort;
 		$this->socketSendTimeout = $socketSendTimeout;
 		$this->socketRecvTimeout = $socketRecvTimeout;
 	}
-	
+
 	public function setRequestMap($requestMap) {
 		$this->requestMap = $requestMap;
 	}
@@ -131,33 +144,41 @@ class BxClient
 		require_once($libPath . "/BxAutocompleteResponse.php");
 		require_once($libPath . "/BxData.php");
 	}
-	
+
 	public function getAccount($checkDev = true) {
 		if($checkDev && $this->isDev) {
 			return $this->account . '_dev';
 		}
 		return $this->account;
 	}
-	
+
 	public function getUsername() {
 		return $this->getAccount(false);
 	}
-	
+
 	public function getPassword() {
 		return $this->password;
 	}
-	
+
+	public function getApiKey() {
+	    return $this->apiKey;
+  }
+
+	public function getApiSecret() {
+	    return $this->apiSecret;
+  }
+
 	public function setSessionAndProfile($sessionId, $profileId) {
 		$this->sessionId = $sessionId;
 		$this->profileId = $profileId;
 	}
-	
+
 	public function getSessionAndProfile() {
-		
+
 		if($this->sessionId != null && $this->profileId != null) {
 			return array($this->sessionId, $this->profileId);
 		}
-		
+
 		if (empty($_COOKIE['cems'])) {
 			$sessionId = session_id();
 			if (empty($sessionId)) {
@@ -186,25 +207,27 @@ class BxClient
 			@setcookie('cems', $sessionId, 0, '/', $this->domain);
 			@setcookie('cemv', $profileId, time() + self::VISITOR_COOKIE_TIME, '/', $this->domain);
 		}
-		
+
 		$this->sessionId = $sessionId;
 		$this->profileId = $profileId;
-		
+
 		return array($this->sessionId, $this->profileId);
 	}
-	
+
 	private function getUserRecord() {
 		$userRecord = new \com\boxalino\p13n\api\thrift\UserRecord();
 		$userRecord->username = $this->getAccount();
+		$userRecord->apiKey = $this->getApiKey();
+		$userRecord->apiSecret = $this->getApiSecret();
 		return $userRecord;
 	}
 
-    public function setCurlTimeout($timeout) {
-        $this->curl_timeout = $timeout;
+	public function setCurlTimeout($timeout) {
+	    $this->curl_timeout = $timeout;
     }
 
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
-		
+
 		if($this->socketHost != null) {
 			$transport = new \Thrift\Transport\TSocket($this->socketHost, $this->socketPort);
 			$transport->setSendTimeout($this->socketSendTimeout);
@@ -215,7 +238,7 @@ class BxClient
 		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
-            $transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
+			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
 		} else {
 			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
 		}
@@ -226,13 +249,13 @@ class BxClient
 		$transport->open();
 		return $client;
 	}
-	
+
 	public function getChoiceRequest($inquiries, $requestContext = null) {
-		
+
 		$choiceRequest = new \com\boxalino\p13n\api\thrift\ChoiceRequest();
 
 		list($sessionid, $profileid) = $this->getSessionAndProfile();
-		
+
 		$choiceRequest->userRecord = $this->getUserRecord();
 		$choiceRequest->profileId = $profileid;
 		$choiceRequest->inquiries = $inquiries;
@@ -243,7 +266,7 @@ class BxClient
 
 		return $choiceRequest;
 	}
-	
+
 	protected function getIP()
 	{
 		$ip = null;
@@ -265,7 +288,7 @@ class BxClient
 		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
 		$hostname = @$_SERVER['HTTP_HOST'];
 		$requesturi = @$_SERVER['REQUEST_URI'];
-		
+
 		if($hostname == "") {
 			return "";
 		}
@@ -290,7 +313,7 @@ class BxClient
 		}
 		$this->requestContextParameters[$name] = $values;
 	}
-	
+
 	public function resetRequestContextParameter() {
 		$this->requestContextParameters = array();
 	}
@@ -321,7 +344,7 @@ class BxClient
 		}
 		return $params;
 	}
-	
+
 	protected function getRequestContext()
 	{
 		$requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
@@ -339,7 +362,7 @@ class BxClient
 
 		return $requestContext;
 	}
-	
+
 	private function throwCorrectP13nException($e) {
 		if(strpos($e->getMessage(), 'Could not connect ') !== false) {
 			throw new \Exception('The connection to our server failed even before checking your credentials. This might be typically caused by 2 possible things: wrong values in host, port, schema or uri (typical value should be host=cdn.bx-cloud.com, port=443, uri =/p13n.web/p13n and schema=https, your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates), which you can either fix, or avoid the problem by adding the line "curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);" in the file "lib\Thrift\Transport\P13nTCurlClient" after the call to curl_init in the function flush. Full error message=' . $e->getMessage());
@@ -377,10 +400,10 @@ class BxClient
             }
             if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
                 $debug = true;
-                if(isset($this->requestMap['dev_bx_choice'])) {
+                if (isset($this->requestMap['dev_bx_choice'])) {
                     $debug = false;
-                    foreach ($choiceRequest->inquiries as $inqury) {
-                        if($inqury->choiceId == $this->requestMap['dev_bx_choice']) {
+                    foreach ($choiceRequest->inquiries as $inquiry) {
+                        if ($inquiry->choiceId == $this->requestMap['dev_bx_choice']) {
                             $debug = true;
                             break;
                         }
@@ -423,6 +446,7 @@ class BxClient
 		$request->setDefaultIndexId($this->getAccount());
 		$request->setDefaultRequestMap($this->requestMap);
 		$this->chooseRequests[] = $request;
+		return sizeof($this->chooseRequests)-1;
 	}
 
 	public function addBundleRequest($requests) {
@@ -659,6 +683,10 @@ class BxClient
 	public function setTimeout($timeout) {
 		$this->_timeout = $timeout;
 		return $this;
+	}
+
+	public function getDebugOutput(){
+		return $this->debugOutput;
 	}
 
     public function notifyWarning($warning) {
