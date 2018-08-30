@@ -53,9 +53,17 @@ class P13nTHttpClient extends THttpClient
         }
     }
 
-    public function setAuthorization($username, $password) {
+    /**
+     * @param $username
+     * @param $password
+     * @return $this
+     */
+    public function setAuthorization($username, $password)
+    {
         $this->authorizationString = base64_encode($username.':'.$password);
+        return $this;
     }
+
 
     /**
      * adding tracker for the node-pinning architecture
