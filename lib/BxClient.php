@@ -236,11 +236,13 @@ class BxClient
 	    $this->curl_timeout = $timeout;
     }
 
-	private function getP13n($timeout=2, $useCurlIfAvailable=true){
+	private function getP13n($timeout=2, $useCurlIfAvailable=true)
+    {
+        list($sessionId, $profileId) = $this->getSessionAndProfile();
 
 		if(isset($this->requestMap['dev_bx_socket'])) {
 			$this->setSocket($this->requestMap['dev_bx_socket']);
-		}
+        }
 	
 		if($this->socketHost != null) {
 			$transport = new \Thrift\Transport\TSocket($this->socketHost, $this->socketPort);
@@ -252,11 +254,13 @@ class BxClient
 		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
-			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
+			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
+			$transport->setTimeout($this->curl_timeout);
 		} else {
 			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
 		}
 
+		$transport->setProfileId($profileId);
 		$transport->setAuthorization($this->p13n_username, $this->p13n_password);
 		$transport->setTimeoutSecs($timeout);
 		$client = new \com\boxalino\p13n\api\thrift\P13nServiceClient(new \Thrift\Protocol\TCompactProtocol($transport));
@@ -342,7 +346,8 @@ class BxClient
 			'User-Host'	  => array($this->getIP()),
 			'User-SessionId' => array($sessionid),
 			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
-			'User-URL'	   => array($this->getCurrentURL())
+			'User-URL'	   => array($this->getCurrentURL()),
+            'X-BX-PROFILEID' => array($profileid)
 		);
 	}
 
