@@ -9,6 +9,11 @@ class P13nTCurlClient extends TCurlClient
 {
 
     /**
+     * @var
+     */
+    private static $curlHandle;
+
+    /**
      * @var string
      */
     protected $authorizationString;
@@ -42,12 +47,13 @@ class P13nTCurlClient extends TCurlClient
             @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
-            curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, array("X-BX-PROFILEID: {$this->profileId}"));
         }
+
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
         $fullUrl = $this->scheme_."://".$host.$this->uri_;
 
-        $headers = array('Host: '.$host,
+        $headers = array(
+            'Host: '. $host,
             'Accept: application/x-thrift',
             'User-Agent: PHP/THttpClient',
             'Content-Type: application/x-thrift',
