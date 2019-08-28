@@ -189,7 +189,6 @@ class BxChooseResponse
     }
 
     public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id', $discardIfSubPhrases = true) {
-
         $variant = $this->getChoiceResponseVariant($choice, $count);
         return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fieldId);
     }
@@ -250,7 +249,6 @@ class BxChooseResponse
     }
 
     public function getFacets($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
-
         $variant = $this->getChoiceResponseVariant($choice, $count);
         $searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases);
         $facets = $this->getRequestFacets($choice);
