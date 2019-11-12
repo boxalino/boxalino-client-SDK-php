@@ -1,4 +1,5 @@
 <?php
+
 namespace com\boxalino\bxclient\v1;
 
 class BxFacets
@@ -17,8 +18,6 @@ class BxFacets
     protected $notificationLog = array();
 
     protected $notificationMode = false;
-
-    protected $showEmptyFacets = false;
 
     public function setNotificationMode($mode) {
         $this->notificationMode = $mode;
@@ -136,11 +135,6 @@ class BxFacets
         return $selectedValues;
     }
 
-    public function showEmptyFacets($value)
-    {
-        $this->showEmptyFacets = $value;
-    }
-
     public function getFieldNames() {
         $fieldNames = array();
 
@@ -160,12 +154,9 @@ class BxFacets
                 }
             }
         }
-
         foreach($this->facets as $fieldName => $facet) {
             $facetResponse = $this->getFacetResponse($fieldName);
-            if(is_null($facetResponse)){ continue; }
-
-            if($this->showEmptyFacets || sizeof($facetResponse->values)>0 || sizeof($facet['selectedValues'])>0) {
+            if(!is_null($facetResponse) && (sizeof($facetResponse->values)>0 || sizeof($facet['selectedValues'])>0)) {
                 $fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=> sizeof($fieldNames));
             }
         }
@@ -234,7 +225,7 @@ class BxFacets
     }
 
     public function getCPOFinderFacets($returnHidden=false){
-        return $this->getFacetExtraInfoFacets('finderFacet', 'true', false, $returnHidden, true);
+      return $this->getFacetExtraInfoFacets('finderFacet', 'true', false, $returnHidden, true);
     }
 
     public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
@@ -727,7 +718,7 @@ class BxFacets
             if($facet['type'] == 'hierarchical') {
                 $facetResponse = $this->getFacetResponse($fieldName);
                 if(is_null($facetResponse)) {
-                    return false;
+                   return false;
                 }
                 $tree = $this->buildTree($facetResponse->values);
                 $tree = $this->getSelectedTreeNode($tree);
@@ -755,7 +746,7 @@ class BxFacets
         $fieldName = $this->getCategoryFieldName();
         $facetResponse = $this->getFacetResponse($fieldName);
         if(is_null($facetResponse)) {
-            return array();
+           return array();
         }
         $tree = $this->buildTree($facetResponse->values);
         $treeEnd = $this->getSelectedTreeNode($tree);
@@ -1073,6 +1064,9 @@ class BxFacets
                     if ($rangedValue[0] != '*') {
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
+                    if(!isset($rangedValue[1])){
+                        $rangedValue[1] = "*";
+                    }
                     if ($rangedValue[1] != '*') {
                         $selectedFacet->rangeToExclusive = $this->getPriceRangeExclusive((float)$rangedValue[1]);
                     }
@@ -1111,6 +1105,11 @@ class BxFacets
         }
     }
 
+    public function isNavigation()
+    {
+        return (bool) empty($this->searchResult->queryText);
+    }
+
     /**
      * The price range max value must not be exclusive, so that existing products for max price to be also displayed
      *
@@ -1121,4 +1120,5 @@ class BxFacets
     {
         return $value+0.001;
     }
+
 }

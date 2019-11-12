@@ -1,4 +1,5 @@
 <?php
+
 namespace com\boxalino\bxclient\v1;
 
 class BxData
@@ -41,24 +42,20 @@ class BxData
         $this->delimiter = $delimiter;
     }
 
-    public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true)
-    {
+    public function addMainXmlItemFile($filePath, $itemIdColumn, $xPath='', $encoding = 'UTF-8', $sourceId = 'item_vals', $container = 'products', $validate=true) {
         $sourceKey = $this->addXMLItemFile($filePath, $itemIdColumn, $xPath, $encoding, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'XML', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
-
-    public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true)
-    {
+    public function addMainCSVItemFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\"", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'item_vals', $container = 'products', $validate=true) {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_item_id", $itemIdColumn, null, $validate) ;
         return $sourceKey;
     }
 
-    public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true)
-    {
+    public function addMainCSVCustomerFile($filePath, $itemIdColumn, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = 'customers', $container = 'customers', $validate=true) {
         $sourceKey = $this->addCSVItemFile($filePath, $itemIdColumn, $encoding, $delimiter, $enclosure, $escape, $lineSeparator, $sourceId, $container, $validate);
         $this->addSourceIdField($sourceKey, $itemIdColumn, 'CSV', null, $validate) ;
         $this->addSourceStringField($sourceKey, "bx_customer_id", $itemIdColumn, null, $validate) ;
@@ -96,13 +93,32 @@ class BxData
     public function addResourceFile($filePath, $categoryIdColumn, $labelColumns, $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n", $sourceId = null, $container = 'products', $validate=true, $maxLength=23) {
         $params = array('referenceIdColumn'=>$categoryIdColumn, 'labelColumns'=>$labelColumns, 'encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
         if($sourceId == null) {
-            $sourceId = 'resource_' . $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength-9, true);
+            $sourceId = 'resource_' . $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
         }
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params, $validate);
     }
 
-    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $currencyColumn, $emailColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true)
+    /**
+     * Adding an additional table file with the content as it has it
+     *
+     * @param $filePath
+     * @param $container - name of the entity (customers, products, transactions are accepted)
+     * @param $column - 1st column or reference column
+     * @param $columns - field names or labels
+     * @param int $maxLength
+     * @return string
+     * @throws \Exception
+     */
+    public function addExtraTableToEntity($filePath, $container, $column, $columns, $maxLength = 23)
     {
+        $params = ['referenceIdColumn'=>$column, 'labelColumns'=>$columns, 'encoding' => 'UTF-8', 'delimiter'=>',', 'enclosure'=>'"', 'escape'=>"\\\\", 'lineSeparator'=>"\\n"];
+        $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
+
+        return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params);
+    }
+
+    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $currencyColumn, $emailColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
+
         $params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 
         $params['file'] = $this->getFileNameFromPath($filePath);
@@ -119,21 +135,6 @@ class BxData
         $params['emailColumn'] = $emailColumn;
 
         return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
-    }
-
-    /**
-     * Adding an additional table file with the content as it has it
-     *
-     * @param $filePath
-     * @return string
-     * @throws \Exception
-     */
-    public function addExtraTableToEntity($filePath, $container, $column, $columns, $maxLength = 23)
-    {
-        $params = ['referenceIdColumn'=>$column, 'labelColumns'=>$columns, 'encoding' => 'UTF-8', 'delimiter'=>',', 'enclosure'=>'"', 'escape'=>"\\\\", 'lineSeparator'=>"\\n"];
-        $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
-
-        return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params);
     }
 
     public function addSourceFile($filePath, $sourceId, $container, $type, $format='CSV', $params=array(), $validate=true) {
@@ -181,16 +182,16 @@ class BxData
         }
         return null;
     }
-
-    private $globalValidate = true;
-    public function setGlobalValidate($globalValidate) {
-        $this->globalValidate = $globalValidate;
-    }
+	
+	private $globalValidate = true;
+	public function setGlobalValidate($globalValidate) {
+		$this->globalValidate = $globalValidate;
+	}
 
     public function validateSource($container, $sourceId) {
-        if(!$this->globalValidate) {
-            return;
-        }
+		if(!$this->globalValidate) {
+			return;
+		}
         $source = $this->sources[$container][$sourceId];
         if($source['format'] == 'CSV') {
             if(isset($source['itemIdColumn'])) {
@@ -200,9 +201,9 @@ class BxData
     }
 
     public function validateColumnExistance($container, $sourceId, $col) {
-        if(!$this->globalValidate) {
-            return;
-        }
+		if(!$this->globalValidate) {
+			return;
+		}
         $row = $this->getSourceCSVRow($container, $sourceId, 0);
         if($row !== null && !in_array($col, $row)) {
             throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
@@ -321,10 +322,11 @@ class BxData
     }
 
     private $ftpSources = array();
-    public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null, $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
-                                 $timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0, $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0)
-    {
-
+    public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null,
+                                 $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
+                                 $timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0,
+                                 $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0
+    ){
         if($user==null){
             $user = $this->bxClient->getAccount(false);
         }
@@ -352,10 +354,11 @@ class BxData
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         $this->ftpSources[$sourceId] = $params;
     }
-
+	
     private $httpSources = array();
-    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0') {
-
+    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null,
+                                  $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
+    ) {
         if($user===null){
             $user = $this->bxClient->getAccount(false);
         }
@@ -386,8 +389,8 @@ class BxData
 
         //containers
         $containers = $xml->addChild('containers');
-        foreach($this->sources as $containerName => $containerSources) {
-
+        foreach($this->sources as $containerName => $containerSources)
+        {
             $container = $containers->addChild('container');
             $container->addAttribute('id', $containerName);
             $container->addAttribute('type', $containerName);
@@ -618,8 +621,8 @@ class BxData
         return $value;
     }
 
-    public function pushDataSpecifications($ignoreDeltaException=false) {
-
+    public function pushDataSpecifications($ignoreDeltaException=false)
+    {
         if(!$ignoreDeltaException && $this->isDelta) {
             throw new \Exception("You should not push specifications when you are pushing a delta file. Only do it when you are preparing full files. Set method parameter ignoreDeltaException to true to ignore this exception and publish anyway.");
         }
