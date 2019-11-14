@@ -108,7 +108,7 @@ class BxAutocompleteRequest
 		return $autocompleteQuery;
 	}
 	
-	private $propertyQueries = array();
+	private $propertyQueries = [];
 	public function addPropertyQuery($field, $hitCount, $evaluateTotal=false) {
 		$propertyQuery = new \com\boxalino\p13n\api\thrift\PropertyQuery();
 		$propertyQuery->name = $field;
@@ -118,7 +118,7 @@ class BxAutocompleteRequest
 	}
 	
 	public function resetPropertyQueries() {
-		$this->propertyQueries = array();
+		$this->propertyQueries = [];
 	}
 	
 	public function getAutocompleteThriftRequest($profileid, $thriftUserRecord) {

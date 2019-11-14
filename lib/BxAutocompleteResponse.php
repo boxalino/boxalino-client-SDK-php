@@ -24,7 +24,7 @@ class BxAutocompleteResponse
     }
 	
 	public function getTextualSuggestions() {
-		$suggestions = array();
+		$suggestions = [];
 		foreach ($this->getResponse()->hits as $hit) {
 		    if(isset($suggestions[$hit->suggestion])) continue;
 			$suggestions[$hit->suggestion] = $hit->suggestion;
@@ -48,11 +48,11 @@ class BxAutocompleteResponse
 		$queryText = $this->getSearchRequest()->getQueryText();
 		
 		$groupNames = array('highlighted-beginning', 'highlighted-not-beginning', 'others');
-		$groupValues = array();
+		$groupValues = [];
 		
 		foreach($groupNames as $k => $groupName) {
 			if(!isset($groupValues[$k])) {
-				$groupValues[$k] = array();
+				$groupValues[$k] = [];
 			}
 			foreach($suggestions as $suggestion) {
 				if($this->suggestionIsInGroup($groupName, $suggestion)) {
@@ -61,7 +61,7 @@ class BxAutocompleteResponse
 			}
 		}
 		
-		$final = array();
+		$final = [];
 		foreach($groupValues as $values) {
 			foreach($values as $value) {
 				$final[] = $value;
@@ -120,7 +120,7 @@ class BxAutocompleteResponse
 				return $propertyResult->hits;
 			}
 		}
-		return array();
+		return [];
 	}
 	
 	public function getPropertyHit($field, $hitValue) {
@@ -133,7 +133,7 @@ class BxAutocompleteResponse
 	}
 	
 	public function getPropertyHitValues($field) {
-		$hitValues = array();
+		$hitValues = [];
 		foreach ($this->getPropertyHits($field) as $hit) {
 			$hitValues[] = $hit->value;
 		}

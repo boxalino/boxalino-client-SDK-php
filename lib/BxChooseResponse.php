@@ -189,6 +189,7 @@ class BxChooseResponse
     }
 
     public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id', $discardIfSubPhrases = true) {
+
         $variant = $this->getChoiceResponseVariant($choice, $count);
         return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fieldId);
     }
@@ -249,6 +250,7 @@ class BxChooseResponse
     }
 
     public function getFacets($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
+
         $variant = $this->getChoiceResponseVariant($choice, $count);
         $searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases);
         $facets = $this->getRequestFacets($choice);
@@ -518,9 +520,7 @@ class BxChooseResponse
     protected function prepareVisualElement($render, $overwriteParams) {
 
         $visualElement = $render['visualElement'];
-        $renderParameters = isset($render['parameters']) ? $render['parameters'] : array();
-        $visualElementParameters = isset($visualElement['parameters']) ? $visualElement['parameters'] : array();
-        $visualElementParams = $this->mergeJourneyParams($renderParameters, $visualElementParameters);
+        $visualElementParams = $this->mergeJourneyParams($render['parameters'], $visualElement['parameters']);
         $visualElement['parameters'] = $this->mergeJourneyParams($overwriteParams, $visualElementParams);
         $overwriteParams = array_merge($overwriteParams, $this->getOverwriteParams($visualElement['parameters']));
         if(isset($visualElement['subRenderings']) && sizeof($visualElement['subRenderings'])) {

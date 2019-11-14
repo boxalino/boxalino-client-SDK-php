@@ -13,17 +13,17 @@ class BxRequest
 	
 	protected $indexId = null;
 	protected $requestMap = null;
-	protected $returnFields = array();
+	protected $returnFields = [];
 	protected $offset = 0;
 	protected $queryText = "";
 	protected $bxFacets = null;
 	protected $bxSortFields = null;
-	protected $bxFilters = array();
+	protected $bxFilters = [];
 	protected $orFilters = false;
     protected $hitsGroupsAsHits = null;
     protected $groupFacets = null;
 
-    protected $requestContextParameters = array();
+    protected $requestContextParameters = [];
 	
 	public function __construct($language, $choiceId, $max=10, $min=0) {
 		if($choiceId == ''){
@@ -208,7 +208,7 @@ class BxRequest
             $searchQuery->hitsGroupsAsHits = $this->hitsGroupsAsHits;
         }
 		if(sizeof($this->getFilters()) > 0) {
-			$searchQuery->filters = array();
+			$searchQuery->filters = [];
 			foreach($this->getFilters() as $filter) {
 				$searchQuery->filters[] = $filter->getThriftFilter();
 			}
@@ -224,7 +224,7 @@ class BxRequest
 		return $searchQuery;
 	}
 	
-	protected $contextItems = array();
+	protected $contextItems = [];
 	public function setProductContext($fieldName, $contextItemId, $role = 'mainProduct', $relatedProducts = array(), $relatedProductField = 'id') {
 
 		$contextItem = new \com\boxalino\p13n\api\thrift\ContextItem();
@@ -289,7 +289,7 @@ class BxRequest
 	}
 	
 	public function retrieveHitFieldValues($item, $field, $items, $fields) {
-		return array();
+		return [];
 	}
 
 }

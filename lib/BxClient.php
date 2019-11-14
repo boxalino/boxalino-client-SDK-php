@@ -41,22 +41,22 @@ class BxClient
     private $autocompleteRequests = null;
     private $autocompleteResponses = null;
 
-    private $chooseRequests = array();
+    private $chooseRequests = [];
     private $chooseResponses = null;
 
-    private $bundleChooseRequests = array();
+    private $bundleChooseRequests = [];
 
     const VISITOR_COOKIE_TIME = 31536000;
     const BXL_UUID_REQUEST = "_system_requestid";
 
     private $_timeout = 2;
     private $curl_timeout = 2000;
-    private $requestContextParameters = array();
+    private $requestContextParameters = [];
 
     private $sessionId = null;
     private $profileId = null;
 
-    private $requestMap = array();
+    private $requestMap = [];
     protected $sendRequestId = false;
     protected $uuid = null;
 
@@ -65,7 +65,7 @@ class BxClient
     private $socketSendTimeout = null;
     private $socketRecvTimeout = null;
 
-    private $notifications = array();
+    private $notifications = [];
 
     public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null, $request=null, $apiKey=null, $apiSecret=null) {
         $this->account = $account;
@@ -175,7 +175,6 @@ class BxClient
 
     public static function LOAD_CLASSES($libPath)
     {
-        require_once($libPath . '/Thrift/ClassLoader/ThriftClassLoader.php');
         $cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
         $cl->registerNamespace('Thrift', $libPath);
         $cl->register(true);
@@ -372,7 +371,7 @@ class BxClient
     }
 
     public function resetRequestContextParameter() {
-        $this->requestContextParameters = array();
+        $this->requestContextParameters = [];
     }
 
     protected function getBasicRequestContextParameters()
@@ -508,8 +507,8 @@ class BxClient
     }
 
     public function resetRequests() {
-        $this->chooseRequests = array();
-        $this->bundleChooseRequests = array();
+        $this->chooseRequests = [];
+        $this->bundleChooseRequests = [];
     }
 
     public function getRequest($index=0) {
@@ -529,7 +528,7 @@ class BxClient
     }
 
     public function getRecommendationRequests(){
-        $requests = array();
+        $requests = [];
         foreach ($this->chooseRequests as $request){
             if($request instanceof BxRecommendationRequest){
                 $requests[] = $request;

@@ -17,7 +17,7 @@ class BxData
     private $isDelta;
 
     private $delimiter = ',';
-    private $sources = array();
+    private $sources = [];
 
     private $host = 'http://di1.bx-cloud.com';
 
@@ -142,7 +142,7 @@ class BxData
             throw new \Exception("trying to add a source before having declared the languages with method setLanguages");
         }
         if(!isset($this->sources[$container])) {
-            $this->sources[$container] = array();
+            $this->sources[$container] = [];
         }
         $params['filePath'] = $filePath;
         $params['format'] = $format;
@@ -167,7 +167,7 @@ class BxData
         if(!isset($this->sources[$container][$sourceId]['rows'])) {
             if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
                 $count = 1;
-                $this->sources[$container][$sourceId]['rows'] = array();
+                $this->sources[$container][$sourceId]['rows'] = [];
                 while (($data = fgetcsv($handle, 2000, $this->delimiter)) !== FALSE) {
                     $this->sources[$container][$sourceId]['rows'][] = $data;
                     if($count++>=$maxRow) {
@@ -254,7 +254,7 @@ class BxData
     public function addSourceField($sourceKey, $fieldName, $type, $localized, $colMap, $referenceSourceKey=null, $validate=true) {
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         if(!isset($this->sources[$container][$sourceId]['fields'])) {
-            $this->sources[$container][$sourceId]['fields'] = array();
+            $this->sources[$container][$sourceId]['fields'] = [];
         }
         $this->sources[$container][$sourceId]['fields'][$fieldName] = array('type'=>$type, 'localized'=>$localized, 'map'=>$colMap, 'referenceSourceKey'=>$referenceSourceKey);
         if($this->sources[$container][$sourceId]['format'] == 'CSV') {
@@ -316,12 +316,12 @@ class BxData
             throw new \Exception("trying to add a field parameter on sourceId '$sourceId', container '$container', fieldName '$fieldName' while this field doesn't exist");
         }
         if(!isset($this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'])) {
-            $this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'] = array();
+            $this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'] = [];
         }
         $this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'][$parameterName] = $parameterValue;
     }
 
-    private $ftpSources = array();
+    private $ftpSources = [];
     public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null,
                                  $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
                                  $timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0,
@@ -335,7 +335,7 @@ class BxData
             $password = $this->bxClient->getPassword();
         }
 
-        $params = array();
+        $params = [];
         $params['Host'] = $host;
         $params['Port'] = $port;
         $params['User'] = $user;
@@ -355,7 +355,7 @@ class BxData
         $this->ftpSources[$sourceId] = $params;
     }
 	
-    private $httpSources = array();
+    private $httpSources = [];
     public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null,
                                   $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
     ) {
@@ -367,7 +367,7 @@ class BxData
             $password = $this->bxClient->getPassword();
         }
 
-        $params = array();
+        $params = [];
         $params['WebDirectory'] = $webDirectory;
         $params['User'] = $user;
         $params['Pass'] = $password;
@@ -716,7 +716,7 @@ class BxData
     }
 
     public function getFiles() {
-        $files = array();
+        $files = [];
         foreach($this->sources as $container => $containerSources) {
             foreach($containerSources as $sourceId => $sourceValues) {
                 if(isset($this->ftpSources[$sourceId])) {
